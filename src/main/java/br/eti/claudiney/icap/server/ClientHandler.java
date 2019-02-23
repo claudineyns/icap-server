@@ -500,7 +500,12 @@ public class ClientHandler implements Runnable {
 		
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
 		
-		out.write(("ICAP/1.0 200 OK\r\n").getBytes());
+		if( httpRequestBody.size() == 0 && httpResponseBody.size() == 0 ) {
+			out.write(("ICAP/1.0 204 No Content\r\n").getBytes());
+		} else {
+			out.write(("ICAP/1.0 200 OK\r\n").getBytes());
+		}
+		
 		out.write(("Date: "+date+"\r\n").getBytes());
 		out.write(("Server: ICAP-Java-Server/1.0\r\n").getBytes());
 		out.write(("ISTag:\"ALPHA-B123456-GAMA\"\r\n").getBytes());
