@@ -682,17 +682,13 @@ public class ClientHandler implements Runnable {
 		}
 		
 		ByteArrayOutputStream outHttpRequestBody = new ByteArrayOutputStream();
-		
 		if( httpRequestBody.size() > 0 ) {
-			
 			outHttpRequestBody.write((Integer.toHexString(httpRequestBody.size())+"\r\n").getBytes());
 			outHttpRequestBody.write(httpRequestBody.toByteArray());
 			outHttpRequestBody.write("\r\n".getBytes());
-			
 			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
 			encapsulatedHeaderEcho.append("req-body=").append(offset);
 			offset += outHttpRequestBody.size();
-			
 		}
 		
 		if(httpResponseHeaders.size() > 0) {
@@ -702,18 +698,16 @@ public class ClientHandler implements Runnable {
 		}
 		
 		ByteArrayOutputStream outHttpResponseBody = new ByteArrayOutputStream();
-		
 		if( httpResponseBody.size() > 0 ) {
-			
 			outHttpResponseBody.write((Integer.toHexString(httpResponseBody.size())+"\r\n").getBytes());
 			outHttpResponseBody.write(httpResponseBody.toByteArray());
 			outHttpResponseBody.write("\r\n".getBytes());
-			
 			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
 			encapsulatedHeaderEcho.append("res-body=").append(offset);
 			offset += outHttpResponseBody.size();
-			
 		}
+		
+		info("### (SERVER: SEND) ### ICAP RESPONSE HEADER\n<Encapsulated>: " + encapsulatedHeaderEcho);
 		
 		out.write(("Encapsulated: "+encapsulatedHeaderEcho+"\r\n").getBytes());
 		out.write("\r\n".getBytes());
@@ -774,7 +768,7 @@ public class ClientHandler implements Runnable {
 	}
 	
 	private void info(String message) {
-//		Logger.getGlobal().info(message);
+		Logger.getGlobal().info(message);
 	}
 	
 	private void warning(String message) {
