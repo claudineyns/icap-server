@@ -29,7 +29,6 @@ public class ClientHandler implements Runnable {
 			System.err.println("### SERVER ### Startup [WARNING] " +  e.getMessage());
 			serverName = "localhost";
 		}
-		serverName += ".claudiney.eti.br";
 	}
 
 	@Override
@@ -198,60 +197,100 @@ public class ClientHandler implements Runnable {
 	private void readBody(OutputStream out) throws IOException {
         
         boolean previewIsEnough = false;
+        
 		if( previewHeader != null ) {
-			
 			info("### (SERVER: RECEIVE) ### PREVIEW SENT BY CLIENT: "+previewHeader);
-			
 			int contentPreview = Integer.parseInt(previewHeader);
-			if(contentPreview > 0) {
-				previewIsEnough = extractBody(out);
-			}
-			
+			previewIsEnough = extractBody(out, contentPreview);
 			if( ! previewIsEnough ){
 				sendContinue();
 			}
-			
 		}
 		
 		if( !previewIsEnough ) {
 			// Read remaining body content
-			extractBody(out);
+			extractBody(out, -1);
 		}
 		
 	}
 	
-	private boolean extractBody(OutputStream out) throws IOException {
+	private boolean extractBody(OutputStream out, int previewSize) throws IOException {
 		
 		StringBuilder line = new StringBuilder("");
 		
-		int mark[] = new int[11];
+		byte[] cache = null;
+		
+		int mark[] = new int[2];
 		reset(mark);
+		
+		StringBuilder control = new StringBuilder("");
 		
 		while(true) {
 			
 			int reader = in.read();
 			shift(mark);
-			mark[10] = reader;
+			mark[1] = reader;
+			
+			control.append((char)reader);
+			
+			if( reader == ';' ) {
+				continue;
+			}
+			
+			if( reader == ' ' || reader == 'i' ){
+				continue;
+			}
+			
+			if( reader == 'e' ) {
+				if(control.toString().equals("0; ie")) {
+					continue;
+				}
+			}
+			
+			if( reader == 'f' ) {
+				if(control.toString().equals("0; ieof")) {
+					continue;
+				}
+			}
 			
 			if( reader == '\r' ) {
 				continue;
 			}
 			
-			if(    mark[9 ] == '\r'
-				&& mark[10] == '\n' ) {
+			if(    mark[0] == '\r'
+				&& mark[1] == '\n' ) {
 				
-				if( line.length() == 0 ) {
+				if( control.toString().equals("0; ieof\r\n\r\n") ) {
+					return true;
+				}
+				
+				if( control.toString().startsWith("0; ieof") ) {
 					continue;
 				}
 				
-				int amountToRead = Integer.parseInt(line.toString(), 16);
-				if( amountToRead > 0 ) {
-					byte[] cache = new byte[amountToRead];
+				if( line.length() == 0 ) {
+					return false;
+				}
+				
+				int amountRead = Integer.parseInt(line.toString(), 16);
+				if( amountRead > 0 ) {
+					cache = new byte[amountRead];
 					in.read(cache);
 					out.write(cache);
-					System.out.print(new String(cache));
-					in.skip(2); // \r\n
-					reset(mark);
+				}
+				
+				cache = new byte[2];
+				in.read(cache); // \r\n
+				
+				if( amountRead > 0 ) {
+					control = new StringBuilder("");
+				} else {
+					control.append((char)cache[0]);
+					control.append((char)cache[1]);
+				}
+				
+				if( control.toString().equals("0\r\n\r\n")) {
+					return false;
 				}
 				
 				line = new StringBuilder("");
@@ -260,46 +299,7 @@ public class ClientHandler implements Runnable {
 				
 			}
 			
-			if( isHexDigit(reader) ) {
-				line.append((char)reader);
-				continue;
-			}
-			
-			if(    mark[5]  == -1
-				&& mark[6]  == '0'
-				&& mark[7]  == '\r'
-				&& mark[8]  == '\n'
-				&& mark[9]  == '\r' 
-				&& mark[10] == '\n' ) {
-				
-				return false;
-				
-			}
-			
-			if(    mark[7]  == -1
-				&& mark[8]  == '0'
-				&& mark[9]  == '\r' 
-				&& mark[10] == '\n' ) {
-				
-				return false;
-				
-			}
-			
-			if(    mark[0 ] == '0'
-				&& mark[1 ] == ';'
-				&& mark[2 ] == ' '
-				&& mark[3 ] == 'i' 
-				&& mark[4 ] == 'e'
-				&& mark[5 ] == 'o'
-				&& mark[6 ] == 'f'
-				&& mark[7 ] == '\r'
-				&& mark[8 ] == '\n'
-				&& mark[9 ] == '\r'
-				&& mark[10] == '\n' ) {
-				
-				return true;
-				
-			}
+			line.append((char)reader);
 			
 		}
 		
@@ -391,7 +391,7 @@ public class ClientHandler implements Runnable {
 	}
 	
 	private void finishResponse() throws IOException {
-		out.write("0\r\n".getBytes());
+		out.write("0\r\n\r\n".getBytes());
 	}
 	
 	private void sendCloseConnection() throws IOException {
@@ -663,20 +663,6 @@ public class ClientHandler implements Runnable {
 	
 	private static void shift( int[]c ) {
 		for( int i = 1; i < c.length; ++i ) c[i-1] = c[i];
-	}
-	
-	private static boolean isHexDigit(char ch) {
-		
-		if(Character.isDigit(ch))  return true;
-		if(ch >= 'A' && ch <= 'F') return true;
-		if(ch >= 'a' && ch <= 'f') return true;
-		
-		return false;
-		
-	}
-	
-	private static boolean isHexDigit(int codePoint) {
-		return isHexDigit((char)codePoint);
 	}
 	
 	public static void main(String[] args) throws Exception {
