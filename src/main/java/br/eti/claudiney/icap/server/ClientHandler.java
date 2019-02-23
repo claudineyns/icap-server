@@ -237,15 +237,14 @@ public class ClientHandler implements Runnable {
 			System.out.print((char)reader);
 			
 			shift(mark);
-			
 			mark[10] = reader;
 			
-			if( reader == '\r'
-					|| (reader != '\n' && ! isHexDigit(reader)) ) {
+			if( reader == '\r' ) {
 				continue;
 			}
 			
-			if(    mark[6]  == '0'
+			if(    mark[5]  == -1
+				&& mark[6]  == '0'
 				&& mark[7]  == '\r'
 				&& mark[8]  == '\n'
 				&& mark[9]  == '\r' 
@@ -297,6 +296,10 @@ public class ClientHandler implements Runnable {
 				
 				continue;
 				
+			}
+			
+			if( !isHexDigit(reader) ) {
+				continue;
 			}
 			
 			line.append((char)reader);
