@@ -229,9 +229,12 @@ public class ClientHandler implements Runnable {
 		
 		int amountToRead = -1;
 		
+		System.out.println("--------------------------------------------------");
+		
 		while(true) {
 			
 			int reader = in.read();
+			System.out.print((char)reader);
 			
 			shift(mark);
 			
