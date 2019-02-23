@@ -452,7 +452,6 @@ public class ClientHandler implements Runnable {
 		out.write(("Allow: 204\r\n").getBytes());
 		out.write(("Preview: 0\r\n").getBytes());
 		out.write(("Transfer-Complete: *\r\n").getBytes());
-		out.write(("Connection: close\r\n").getBytes());
 		out.write(("Encapsulated: null-body=0\r\n").getBytes());
 		out.write(("\r\n").getBytes());
 		
