@@ -62,15 +62,15 @@ public class ClientHandler implements Runnable {
 	
 	private void handle() throws IOException {
 
-//		while(true) {
+		while(true) {
 			startHandleIcapRequest();
 			if( methodInProgress != null ) {
 				continueHandleIcapRequest();
 			}
-//			if( ! OPTIONS.equals(methodInProgress) ) {
-//				break;
-//			}
-//		}
+			if( ! OPTIONS.equals(methodInProgress) ) {
+				break;
+			}
+		}
 		
 	}
 	
