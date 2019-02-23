@@ -207,19 +207,15 @@ public class ClientHandler implements Runnable {
 	
 	private void readBody(OutputStream out) throws IOException {
         
-		ByteArrayOutputStream intercept = new ByteArrayOutputStream();
-		
         boolean previewIsEnough = false;
         
 		if( previewHeader != null ) {
 			info("### (SERVER: RECEIVE) ### PREVIEW SENT BY CLIENT: "+previewHeader);
 			int contentPreview = Integer.parseInt(previewHeader);
-//			previewIsEnough = extractBody(out, contentPreview);
-			previewIsEnough = extractBody(intercept, contentPreview);
-			out.write(intercept.toByteArray());
+			previewIsEnough = extractBody(out, contentPreview);
 			if( ! previewIsEnough ){
-				info("### (SERVER: RECEIVE) ### PREVIEW PAYLOAD:\n"+new String(intercept.toByteArray())+"\n------------------");
 				sendContinue();
+				out.flush();
 			}
 		}
 		
