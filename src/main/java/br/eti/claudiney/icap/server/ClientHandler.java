@@ -1,8 +1,6 @@
 package br.eti.claudiney.icap.server;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -85,12 +83,14 @@ public class ClientHandler implements Runnable {
 				if( methodInProgress != null ) {
 					continueHandleIcapRequest();
 				}
+				out.flush();
 			} catch(IOException e) {
 				e.printStackTrace();
-				sendServerError(e.getMessage());
 				break;
+			} catch(Exception e) {
+				sendServerError(e.getMessage());
 			}
-			out.flush();
+			
 			if( OPTIONS.equals(methodInProgress) ) {
 				continue;
 			}
@@ -99,7 +99,7 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void startHandleIcapRequest() throws IOException {
+	private void startHandleIcapRequest() throws Exception {
 		
 		ByteArrayOutputStream cache = new ByteArrayOutputStream();
 		
@@ -127,7 +127,7 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void continueHandleIcapRequest() throws IOException {
+	private void continueHandleIcapRequest() throws Exception {
 		
 		extractEncapsulatedPayloads();
 		
@@ -139,7 +139,7 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void extractEncapsulatedPayloads() throws IOException {
+	private void extractEncapsulatedPayloads() throws Exception {
 
         int httpRequestHeaderSize = 0;
         int httpResponseHeaderSize = 0;
@@ -203,7 +203,7 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void readBody(OutputStream out) throws IOException {
+	private void readBody(OutputStream out) throws Exception {
         
         boolean previewIsEnough = false;
         
@@ -224,7 +224,7 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private boolean extractBody(OutputStream out, int previewSize) throws IOException {
+	private boolean extractBody(OutputStream out, int previewSize) throws Exception {
 		
 		ByteArrayOutputStream backupDebug = new ByteArrayOutputStream(); 
 		
@@ -286,17 +286,7 @@ public class ClientHandler implements Runnable {
 					return false;
 				}
 				
-				int amountRead = 0;
-				try {
-					amountRead = Integer.parseInt(line.toString(), 16);
-				} catch(NumberFormatException e) {
-					System.err.print("\n----------------------------------------------\n");
-					System.err.println(e.getMessage());
-					System.err.print("\n----------------------------------------------\n");
-					System.err.print(line.toString());
-					System.err.print("\n----------------------------------------------\n");
-					throw new IOException(e);
-				}
+				int amountRead = Integer.parseInt(line.toString(), 16);
 				
 				int bytesAvailable = amountRead;
 				while( bytesAvailable > 0 ) {
@@ -317,14 +307,7 @@ public class ClientHandler implements Runnable {
 				backupDebug.write(cr); backupDebug.write(lf);
 				
 				if( cr != '\r' || lf != '\n' ) {
-					byte[] n = backupDebug.toByteArray();
-					OutputStream flusher = new FileOutputStream(new File(
-							System.getProperty("java.io.tmpdir"),
-							"debug.log"));
-					flusher.write(n);
-					flusher.flush();
-					flusher.close();
-					throw new IOException("Error reading end of chunked message");
+					throw new Exception("Error reading end of chunk");
 				}
 				
 				if( amountRead > 0 ) {
@@ -350,7 +333,7 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void analyseRequestHeader(byte[] memory) throws IOException {
+	private void analyseRequestHeader(byte[] memory) throws Exception {
 
 		String data = new String(memory);
 
@@ -493,7 +476,7 @@ public class ClientHandler implements Runnable {
 		}
 	}
 	
-	private String[] validateURI(String uri) throws IOException {
+	private String[] validateURI(String uri) {
 		
 		Pattern uriPattern = Pattern.compile("icap:\\/\\/(.*)(\\/.*)");
 		Matcher uriMatcher = uriPattern.matcher(uri);
@@ -510,7 +493,9 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void handleOptions(String[] entries, String[] uriParser) throws IOException {
+	private void handleOptions(
+			String[] entries,
+			String[] uriParser) throws Exception {
 		
 		String service = uriParser[1];
 		String service2 = service.toLowerCase();
@@ -540,11 +525,11 @@ public class ClientHandler implements Runnable {
 			out.write(("Methods: "+REQMOD+", "+RESPMOD+"\r\n").getBytes());
 		}
 		
-		out.write(("Service: Java Tech Server 1.0\r\n").getBytes());
+		out.write(("Service: Java-Tech-Server/1.0\r\n").getBytes());
 		out.write(("ISTag:\"ALPHA-B123456-GAMA\"\r\n").getBytes());
 		out.write(("Allow: 204\r\n").getBytes());
-		out.write(("Preview: 1024\r\n").getBytes());
-		out.write(("Transfer-Preview: *\r\n").getBytes());
+		out.write(("Preview: 0\r\n").getBytes());
+		out.write(("Transfer-Complete: *\r\n").getBytes());
 		out.write(("Encapsulated: null-body=0\r\n").getBytes());
 		out.write(("\r\n").getBytes());
 		
@@ -552,7 +537,9 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void handleRequestModification(String[] entries, String[] uriParser) throws IOException {
+	private void handleRequestModification(
+			String[] entries,
+			String[] uriParser) throws Exception {
 		
 		String service = uriParser[1];
 		String service2 = service.toLowerCase();
@@ -570,7 +557,9 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void handleResponseModification(String[] entries, String[] uriParser) throws IOException {
+	private void handleResponseModification(
+			String[] entries,
+			String[] uriParser) throws Exception {
 		
 		String service = uriParser[1];
 		String service2 = service.toLowerCase();
@@ -589,7 +578,7 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void continueRequestModification() throws IOException {
+	private void continueRequestModification() throws Exception {
 		
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
 		
@@ -614,7 +603,7 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void continueResponseModification() throws IOException {
+	private void continueResponseModification() throws Exception {
 		
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
 		
@@ -643,7 +632,7 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void completeHandleInfo(String date) throws IOException {
+	private void completeHandleInfo(String date) throws Exception {
 		
 		StringBuilder httpResponseBody = new StringBuilder();
 		
@@ -683,7 +672,7 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void completeHandleEcho() throws IOException {
+	private void completeHandleEcho() throws Exception {
 		
 		StringBuilder encapsulatedHeaderEcho = new StringBuilder();
 		
@@ -759,7 +748,7 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
-	private void completeHandleVirusScan() throws IOException {
+	private void completeHandleVirusScan() throws Exception {
 		
 	}
 	
