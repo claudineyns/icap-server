@@ -450,8 +450,8 @@ public class ClientHandler implements Runnable {
 		out.write(("Service: Java Tech Server 1.0\r\n").getBytes());
 		out.write(("ISTag:\"ALPHA-B123456-GAMA\"\r\n").getBytes());
 		out.write(("Allow: 204\r\n").getBytes());
-		out.write(("Preview: 0\r\n").getBytes());
-		out.write(("Transfer-Complete: *\r\n").getBytes());
+		out.write(("Preview: 1024\r\n").getBytes());
+		out.write(("Transfer-Preview: *\r\n").getBytes());
 		out.write(("Encapsulated: null-body=0\r\n").getBytes());
 		out.write(("\r\n").getBytes());
 		
