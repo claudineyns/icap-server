@@ -209,17 +209,20 @@ public class ClientHandler implements Runnable {
         boolean previewIsEnough = false;
         
 		if( previewHeader != null ) {
-			info("### (SERVER: RECEIVE) ### PREVIEW SENT BY CLIENT: "+previewHeader);
+			/*
+			 * Read preview payload
+			 */
 			int contentPreview = Integer.parseInt(previewHeader);
 			previewIsEnough = extractBody(out, contentPreview);
 			if( ! previewIsEnough ){
 				sendContinue();
-				out.flush();
 			}
 		}
 		
 		if( !previewIsEnough ) {
-			// Read remaining body content
+			/*
+			 * Read remaining body payload
+			 */
 			extractBody(out, -1);
 		}
 		
