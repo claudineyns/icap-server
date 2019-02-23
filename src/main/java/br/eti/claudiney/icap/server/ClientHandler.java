@@ -288,6 +288,7 @@ public class ClientHandler implements Runnable {
 					byte[] cache = new byte[amountToRead];
 					in.read(cache);
 					out.write(cache);
+					System.out.print(new String(cache));
 					in.skip(2); // \r\n
 					reset(mark);
 				}
