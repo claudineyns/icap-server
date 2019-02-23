@@ -715,21 +715,25 @@ public class ClientHandler implements Runnable {
 		boolean eof = false;
 		if(httpRequestHeaders.size() > 0) {
 			eof = true;
+			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP REQUEST HEADER\n" + new String(httpRequestHeaders.toByteArray()));
 			out.write(httpRequestHeaders.toByteArray());
 		}
 		
 		if(outHttpRequestBody.size() > 0) {
 			eof = true;
+			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP REQUEST BODY\n" + new String(outHttpRequestBody.toByteArray()));
 			out.write(outHttpRequestBody.toByteArray());
 		}
 		
 		if(httpResponseHeaders.size() > 0) {
 			eof = true;
+			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP RESPONSE HEADER\n" + new String(httpResponseHeaders.toByteArray()));
 			out.write(httpResponseHeaders.toByteArray());
 		}
 		
 		if(outHttpResponseBody.size() > 0) {
 			eof = true;
+			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP RESPONSE BODY\n" + new String(outHttpResponseBody.toByteArray()));
 			out.write(outHttpResponseBody.toByteArray());
 		}
 		
