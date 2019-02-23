@@ -383,7 +383,7 @@ public class ClientHandler implements Runnable {
 			out.write(("Encapsulated: opt-body=0\r\n").getBytes());
 			out.write("\r\n".getBytes());
 			out.write((Integer.toHexString(cause.length())+"\r\n").getBytes());
-			out.write(cause.getBytes());
+			out.write((cause+"\r\n").getBytes());
 			finishResponse();
 		}
 	}
