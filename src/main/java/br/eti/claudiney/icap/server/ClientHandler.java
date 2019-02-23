@@ -200,7 +200,7 @@ public class ClientHandler implements Runnable {
         boolean previewIsEnough = false;
 		if( previewHeader != null ) {
 			
-			info("### (SERVER: RECEIVE) ### PREVIEW SENT BY CLIENT \n"+previewHeader);
+			info("### (SERVER: RECEIVE) ### PREVIEW SENT BY CLIENT: "+previewHeader);
 			
 			int contentPreview = Integer.parseInt(previewHeader);
 			if(contentPreview > 0) {
@@ -245,6 +245,15 @@ public class ClientHandler implements Runnable {
 			if(    mark[6]  == '0'
 				&& mark[7]  == '\r'
 				&& mark[8]  == '\n'
+				&& mark[9]  == '\r' 
+				&& mark[10] == '\n' ) {
+				
+				return false;
+				
+			}
+			
+			if(    mark[7]  == -1
+				&& mark[8]  == '0'
 				&& mark[9]  == '\r' 
 				&& mark[10] == '\n' ) {
 				
@@ -389,7 +398,7 @@ public class ClientHandler implements Runnable {
 	}
 	
 	private void sendContinue() throws IOException {
-		info("### (SERVER: SEND) ### ICAP RESPONSE: 100 Contine");
+		info("### (SERVER: SEND) ### ICAP RESPONSE: 100 Continue");
 		out.write("ICAP/1.0 100 Continue\r\n".getBytes());
 		out.write("\r\n".getBytes());
 	}
