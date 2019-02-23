@@ -220,70 +220,92 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
+	private long extractionVersion = 0;
+	private Object extractLock = new Object();
+	ByteArrayOutputStream extractCache = null;
+	
 	private boolean extractBody(OutputStream out) throws IOException {
 		
 		StringBuilder line = new StringBuilder("");
 		
+		extractCache = new ByteArrayOutputStream();
+		
 		int mark[] = new int[11];
 		reset(mark);
 		
-		int amountToRead = -1;
+		long extractPosition = extractionVersion;
 		
-		System.out.println("--------------------------------------------------");
+		new Thread() {
+			public void run() {
+				while(true) {
+					try {
+						if(extractCache != null) {
+							extractCache.write(in.read());
+							synchronized(extractLock) {
+								++extractionVersion;
+								extractLock.notifyAll();
+							}
+						} else {
+							break;
+						}
+					} catch(Exception e) {
+						break;
+					}
+				}
+			}
+		}.start();
+		
+		byte[] payload = null;
 		
 		while(true) {
-			
-			int reader = in.read();
-			System.out.print((char)reader);
-			
-			shift(mark);
-			mark[10] = reader;
-			
-			if( reader == '\r' ) {
-				continue;
+			synchronized(extractLock) {
+				try {
+					extractLock.wait(750);
+					if(extractionVersion > extractPosition) {
+						extractPosition = extractionVersion;
+						continue;
+					}
+					payload = extractCache.toByteArray();
+					extractCache = null;
+					break;
+				} catch(InterruptedException e) {}
 			}
+		}
+		
+		for( int ax = 0; ax < payload.length; ++ax ) {
 			
-			if(    mark[5]  == -1
-				&& mark[6]  == '0'
-				&& mark[7]  == '\r'
-				&& mark[8]  == '\n'
-				&& mark[9]  == '\r' 
-				&& mark[10] == '\n' ) {
-				
-				return false;
-				
-			}
+			int reader = payload[ax];
 			
-			if(    mark[7]  == -1
-				&& mark[8]  == '0'
-				&& mark[9]  == '\r' 
-				&& mark[10] == '\n' ) {
-				
-				return false;
-				
-			}
-			
-			if(    mark[0 ] == '0'
-				&& mark[1 ] == ';'
-				&& mark[2 ] == ' '
-				&& mark[3 ] == 'i' 
-				&& mark[4 ] == 'e'
-				&& mark[5 ] == 'o'
-				&& mark[6 ] == 'f'
-				&& mark[7 ] == '\r'
-				&& mark[8 ] == '\n'
-				&& mark[9 ] == '\r'
-				&& mark[10] == '\n' ) {
+			if(    payload[payload.length -11] == '0'
+				&& payload[payload.length -10] == ';'
+				&& payload[payload.length - 9] == ' '
+				&& payload[payload.length - 8] == 'i' 
+				&& payload[payload.length - 7] == 'e'
+				&& payload[payload.length - 6] == 'o'
+				&& payload[payload.length - 5] == 'f'
+				&& payload[payload.length - 4] == '\r'
+				&& payload[payload.length - 3] == '\n'
+				&& payload[payload.length - 2] == '\r'
+				&& payload[payload.length - 1] == '\n' ) {
 				
 				return true;
 				
 			}
 			
-			if(    mark[9 ] == '\r'
-				&& mark[10] == '\n' ) {
+			if(    payload[payload.length - 5] == '0'
+				&& payload[payload.length - 4] == '\r'
+				&& payload[payload.length - 3] == '\n'
+				&& payload[payload.length - 2] == '\r' 
+				&& payload[payload.length - 1] == '\n' ) {
 				
-				amountToRead = Integer.parseInt(line.toString(), 16);
+				return false;
 				
+			}
+			
+			if(    payload[payload.length - 2] == '\r'
+				&& payload[payload.length - 1] == '\n' ) {
+				
+				int amountToRead = Integer.parseInt(line.toString(), 16);
 				if( amountToRead > 0 ) {
 					byte[] cache = new byte[amountToRead];
 					in.read(cache);
@@ -299,13 +321,85 @@ public class ClientHandler implements Runnable {
 				
 			}
 			
-			if( !isHexDigit(reader) ) {
-				continue;
-			}
-			
 			line.append((char)reader);
 			
 		}
+		
+		return false;
+		
+//		for( int ax = 0; ax < payload.length; ++ax ) {
+//			
+//			int reader = payload[ax];
+//			
+//			shift(mark);
+//			mark[10] = reader;
+//			
+//			if( reader == '\r' ) {
+//				continue;
+//			}
+//			
+//			if(    mark[5]  == -1
+//				&& mark[6]  == '0'
+//				&& mark[7]  == '\r'
+//				&& mark[8]  == '\n'
+//				&& mark[9]  == '\r' 
+//				&& mark[10] == '\n' ) {
+//				
+//				return false;
+//				
+//			}
+//			
+//			if(    mark[7]  == -1
+//				&& mark[8]  == '0'
+//				&& mark[9]  == '\r' 
+//				&& mark[10] == '\n' ) {
+//				
+//				return false;
+//				
+//			}
+//			
+//			if(    mark[0 ] == '0'
+//				&& mark[1 ] == ';'
+//				&& mark[2 ] == ' '
+//				&& mark[3 ] == 'i' 
+//				&& mark[4 ] == 'e'
+//				&& mark[5 ] == 'o'
+//				&& mark[6 ] == 'f'
+//				&& mark[7 ] == '\r'
+//				&& mark[8 ] == '\n'
+//				&& mark[9 ] == '\r'
+//				&& mark[10] == '\n' ) {
+//				
+//				return true;
+//				
+//			}
+//			
+//			if(    mark[9 ] == '\r'
+//				&& mark[10] == '\n' ) {
+//				
+//				int amountToRead = Integer.parseInt(line.toString(), 16);
+//				if( amountToRead > 0 ) {
+//					byte[] cache = new byte[amountToRead];
+//					in.read(cache);
+//					out.write(cache);
+//					System.out.print(new String(cache));
+//					in.skip(2); // \r\n
+//					reset(mark);
+//				}
+//				
+//				line = new StringBuilder("");
+//				
+//				continue;
+//				
+//			}
+//			
+//			if( !isHexDigit(reader) ) {
+//				continue;
+//			}
+//			
+//			line.append((char)reader);
+//			
+//		}
 		
 	}
 	
