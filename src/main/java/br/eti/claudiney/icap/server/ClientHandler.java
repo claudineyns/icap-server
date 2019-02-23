@@ -1,6 +1,8 @@
 package br.eti.claudiney.icap.server;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -84,6 +86,7 @@ public class ClientHandler implements Runnable {
 					continueHandleIcapRequest();
 				}
 			} catch(IOException e) {
+				e.printStackTrace();
 				sendServerError(e.getMessage());
 				break;
 			}
@@ -293,25 +296,36 @@ public class ClientHandler implements Runnable {
 					System.err.print("\n----------------------------------------------\n");
 					System.err.println(e.getMessage());
 					System.err.print("\n----------------------------------------------\n");
-					System.err.print(new String(backupDebug.toByteArray()));
+					System.err.print(line.toString());
 					System.err.print("\n----------------------------------------------\n");
 					throw new IOException(e);
 				}
 				
-				if( amountRead > 0 ) {
-					cache = new byte[amountRead];
-					in.read(cache);
-					out.write(cache);
-				}
+				cache = new byte[amountRead];
+				in.read(cache);
+				out.write(cache);
+				backupDebug.write(cache);
 				
-				cache = new byte[2];
-				in.read(cache); // \r\n
+				int cr = -1, lf = -1;
+				cr = in.read(); lf = in.read();
+				backupDebug.write(cr); backupDebug.write(lf);
+				
+				if( cr != '\r' || lf != '\n' ) {
+					byte[] n = backupDebug.toByteArray();
+					OutputStream flusher = new FileOutputStream(new File(
+							System.getProperty("java.io.tmpdir"),
+							"debug.log"));
+					flusher.write(n);
+					flusher.flush();
+					flusher.close();
+					throw new IOException("Error reading end of chunked message");
+				}
 				
 				if( amountRead > 0 ) {
 					control = new StringBuilder("");
 				} else {
-					control.append((char)cache[0]);
-					control.append((char)cache[1]);
+					control.append((char)cr);
+					control.append((char)lf);
 				}
 				
 				if( control.toString().equals("0\r\n\r\n")) {
