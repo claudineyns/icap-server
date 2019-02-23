@@ -1,7 +1,5 @@
 package br.eti.claudiney.icap.server;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,8 +37,8 @@ public class ClientHandler implements Runnable {
 	public void run() {
 		
 		try {
-			in = new BufferedInputStream(client.getInputStream());
-			out = new BufferedOutputStream(client.getOutputStream());
+			in = client.getInputStream();
+			out = client.getOutputStream();
 			handle();
 			out.close();
 			in.close();
@@ -300,10 +298,19 @@ public class ClientHandler implements Runnable {
 					throw new IOException(e);
 				}
 				
-				cache = new byte[amountRead];
-				in.read(cache);
-				out.write(cache);
-				backupDebug.write(cache);
+				int bytesAvailable = amountRead;
+				while( bytesAvailable > 0 ) {
+					int available = in.available();
+					int part = bytesAvailable;
+					if( part > available ) {
+						part = available;
+					}
+					cache = new byte[part];
+					in.read(cache);
+					out.write(cache);
+					backupDebug.write(cache);
+					bytesAvailable -= part;
+				}
 				
 				int cr = -1, lf = -1;
 				cr = in.read(); lf = in.read();
