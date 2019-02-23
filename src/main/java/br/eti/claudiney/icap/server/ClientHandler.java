@@ -62,11 +62,15 @@ public class ClientHandler implements Runnable {
 	
 	private void handle() throws IOException {
 
-		startHandleIcapRequest();
-		
-		if( methodInProgress != null ) {
-			continueHandleIcapRequest();
-		}
+//		while(true) {
+			startHandleIcapRequest();
+			if( methodInProgress != null ) {
+				continueHandleIcapRequest();
+			}
+//			if( ! OPTIONS.equals(methodInProgress) ) {
+//				break;
+//			}
+//		}
 		
 	}
 	
@@ -448,8 +452,11 @@ public class ClientHandler implements Runnable {
 		out.write(("Allow: 204\r\n").getBytes());
 		out.write(("Preview: 0\r\n").getBytes());
 		out.write(("Transfer-Complete: *\r\n").getBytes());
+		out.write(("Connection: close\r\n").getBytes());
 		out.write(("Encapsulated: null-body=0\r\n").getBytes());
 		out.write(("\r\n").getBytes());
+		
+		methodInProgress = OPTIONS;
 		
 	}
 	
