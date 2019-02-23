@@ -60,16 +60,33 @@ public class ClientHandler implements Runnable {
 	private String methodInProgress = null;
 	private String serviceInProgress = null;
 	
+	private String encapsulatedHeader = null;
+	private String previewHeader = null;
+	
+	private ByteArrayOutputStream httpRequestHeaders = null;
+	private ByteArrayOutputStream httpRequestBody = null;
+	private ByteArrayOutputStream httpResponseHeaders = null;
+	private ByteArrayOutputStream httpResponseBody = null;
+	
 	private void handle() throws IOException {
 
 		while(true) {
+			
+			httpRequestHeaders = new ByteArrayOutputStream();
+			httpRequestBody = new ByteArrayOutputStream();
+			httpResponseHeaders = new ByteArrayOutputStream();
+			httpResponseBody = new ByteArrayOutputStream();
+			
+			methodInProgress = null;
+			
 			startHandleIcapRequest();
 			if( methodInProgress != null ) {
 				continueHandleIcapRequest();
 			}
-			if( ! OPTIONS.equals(methodInProgress) ) {
-				break;
+			if( OPTIONS.equals(methodInProgress) ) {
+				continue;
 			}
+			break;
 		}
 		
 	}
@@ -101,11 +118,6 @@ public class ClientHandler implements Runnable {
 		}
 		
 	}
-	
-	private ByteArrayOutputStream httpRequestHeaders = new ByteArrayOutputStream();
-	private ByteArrayOutputStream httpRequestBody = new ByteArrayOutputStream();
-	private ByteArrayOutputStream httpResponseHeaders = new ByteArrayOutputStream();
-	private ByteArrayOutputStream httpResponseBody = new ByteArrayOutputStream();
 	
 	private void continueHandleIcapRequest() throws IOException {
 		
@@ -276,9 +288,6 @@ public class ClientHandler implements Runnable {
 		}
 		
 	}
-	
-	private String encapsulatedHeader = null;
-	private String previewHeader = null;
 	
 	private void analyseRequestHeader(byte[] memory) throws IOException {
 
