@@ -360,7 +360,7 @@ public class ClientHandler implements Runnable {
 	}
 	
 	private void finishResponse() throws IOException {
-		out.write("0\r\n".getBytes());
+		out.write("0\r\n\r\n".getBytes());
 	}
 	
 	private void sendCloseConnection() throws IOException {
