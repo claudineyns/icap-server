@@ -90,6 +90,7 @@ public class ClientHandler implements Runnable {
 				sendServerError(e.getMessage());
 				break;
 			}
+			out.flush();
 			if( OPTIONS.equals(methodInProgress) ) {
 				continue;
 			}
