@@ -512,7 +512,7 @@ public class ClientHandler implements Runnable {
 		
 		out.write(("ICAP/1.0 200 OK\r\n").getBytes());
 		out.write(("Date: "+date+"\r\n").getBytes());
-		out.write(("Server: ICAP-Java-Server/1.0\r\n").getBytes());
+		out.write(("Server: "+serverName+"\r\n").getBytes());
 		
 		if( service2.startsWith("info")) {
 			out.write(("Methods: "+RESPMOD+"\r\n").getBytes());
@@ -604,8 +604,6 @@ public class ClientHandler implements Runnable {
 		
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
 		
-		info("### (SERVER: SEND) ### ICAP RESPONSE: 200 OK");
-		
 		if( httpResponseBody.size() == 0 ) {
 			info("### (SERVER: SEND) ### ICAP RESPONSE: 204 No Content");
 			out.write(("ICAP/1.0 204 No Content\r\n").getBytes());
@@ -615,7 +613,7 @@ public class ClientHandler implements Runnable {
 		}
 		
 		out.write(("Date: "+date+"\r\n").getBytes());
-		out.write(("Server: ICAP-Java-Server/1.0\r\n").getBytes());
+		out.write(("Server: "+serverName+"\r\n").getBytes());
 		out.write(("ISTag:\"ALPHA-B123456-GAMA\"\r\n").getBytes());
 		out.write(("Connection: close\r\n").getBytes());
 		
@@ -655,7 +653,7 @@ public class ClientHandler implements Runnable {
 		
 		httpResponseHeader.append("HTTP/1.1 200 OK\r\n");
 		httpResponseHeader.append(("Date: "+date+"\r\n"));
-		httpResponseHeader.append(("Server: localhost\r\n"));
+		httpResponseHeader.append(("Server: "+serverName+"\r\n"));
 		httpResponseHeader.append(("Content-Type: text/plain\r\n"));
 		httpResponseHeader.append(("Content-Length: "+httpResponseBody.length()+"\r\n"));
 		httpResponseHeader.append(("Via: 1.0 "+serverName+"\r\n"));
@@ -707,6 +705,11 @@ public class ClientHandler implements Runnable {
 			offset += outHttpResponseBody.size();
 		}
 		
+		if( httpRequestBody.size() == 0 && httpResponseBody.size() == 0 ) {
+			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
+			encapsulatedHeaderEcho.append("null-body=").append(offset);
+		}
+		
 		info("### (SERVER: SEND) ### ICAP RESPONSE HEADER\n<Encapsulated>: " + encapsulatedHeaderEcho);
 		
 		out.write(("Encapsulated: "+encapsulatedHeaderEcho+"\r\n").getBytes());
@@ -745,6 +748,91 @@ public class ClientHandler implements Runnable {
 	
 	private void completeHandleVirusScan() throws Exception {
 		
+		StringBuilder encapsulatedHeaderEcho = new StringBuilder();
+		
+		int offset = 0;
+		
+		ByteArrayOutputStream outHttpRequestHeaders  = new ByteArrayOutputStream();
+		ByteArrayOutputStream outHttpRequestBody     = new ByteArrayOutputStream();
+		ByteArrayOutputStream outHttpResponseHeaders = new ByteArrayOutputStream();
+		ByteArrayOutputStream outHttpResponseBody    = new ByteArrayOutputStream();
+		
+		String responseMessage = "Virus found: Thread/Monster:1-Globster";
+		
+		outHttpResponseHeaders.write("HTTP/1.1 403 Forbidden\r\n".getBytes());
+		outHttpResponseHeaders.write(("Server:"+serverName+"\r\n").getBytes());
+		outHttpResponseHeaders.write(("Content-Type: text/plain\r\n").getBytes());
+		outHttpResponseHeaders.write(("Content-Length: "+responseMessage.length()+"\r\n").getBytes());
+		outHttpResponseHeaders.write(("Via:"+serverName+"\r\n").getBytes());
+		outHttpResponseHeaders.write("\r\n".getBytes());
+		
+		outHttpResponseBody.write((Integer.toHexString(responseMessage.length())+"\r\n").getBytes());
+		outHttpResponseBody.write(responseMessage.getBytes());
+		outHttpResponseBody.write("\r\n".getBytes());
+		
+		if(outHttpRequestHeaders.size() > 0) {
+			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
+			encapsulatedHeaderEcho.append("req-hdr=").append(offset);
+			offset += outHttpRequestHeaders.size(); 
+		}
+		
+		if( outHttpRequestBody.size() > 0 ) {
+			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
+			encapsulatedHeaderEcho.append("req-body=").append(offset);
+			offset += outHttpRequestBody.size();
+		}
+		
+		if(outHttpResponseHeaders.size() > 0) {
+			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
+			encapsulatedHeaderEcho.append("res-hdr=").append(offset);
+			offset += outHttpResponseHeaders.size(); 
+		}
+		
+		if( outHttpResponseBody.size() > 0 ) {
+			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
+			encapsulatedHeaderEcho.append("res-body=").append(offset);
+			offset += outHttpResponseBody.size();
+		}
+		
+		if( outHttpRequestBody.size() == 0 && outHttpResponseBody.size() == 0 ) {
+			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
+			encapsulatedHeaderEcho.append("null-body=").append(offset);
+		}
+		
+		info("### (SERVER: SEND) ### ICAP RESPONSE HEADER\n<Encapsulated>: " + encapsulatedHeaderEcho);
+		
+		out.write(("Encapsulated: "+encapsulatedHeaderEcho+"\r\n").getBytes());
+		out.write("\r\n".getBytes());
+		
+		boolean eof = false;
+		if(outHttpRequestHeaders.size() > 0) {
+			eof = true;
+			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP REQUEST HEADER\n" + new String(outHttpRequestHeaders.toByteArray()));
+			out.write(outHttpRequestHeaders.toByteArray());
+		}
+		
+		if(outHttpRequestBody.size() > 0) {
+			eof = true;
+			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP REQUEST BODY\n" + new String(outHttpRequestBody.toByteArray()));
+			out.write(outHttpRequestBody.toByteArray());
+		}
+		
+		if(outHttpResponseHeaders.size() > 0) {
+			eof = true;
+			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP RESPONSE HEADER\n" + new String(outHttpResponseHeaders.toByteArray()));
+			out.write(outHttpResponseHeaders.toByteArray());
+		}
+		
+		if(outHttpResponseBody.size() > 0) {
+			eof = true;
+			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP RESPONSE BODY\n" + new String(outHttpResponseBody.toByteArray()));
+			out.write(outHttpResponseBody.toByteArray());
+		}
+		
+		if(eof) {
+			finishResponse();
+		}
+		
 	}
 	
 	//----------------------------------------
@@ -772,7 +860,7 @@ public class ClientHandler implements Runnable {
 	}
 	
 	private void info(String message) {
-		Logger.getGlobal().info(message);
+//		Logger.getGlobal().info(message);
 	}
 	
 	private void warning(String message) {
