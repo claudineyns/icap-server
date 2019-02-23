@@ -90,6 +90,8 @@ public class ClientHandler implements Runnable {
 					&& memory[memory.length-2] == '\r' 
 					&& memory[memory.length-1] == '\n' ) {
 					
+					info("### (SERVER: RECEIVE) ### ICAP REQUEST\n"+new String(memory));
+					
 					analyseRequestHeader(memory);
 					break;
 					
@@ -158,20 +160,20 @@ public class ClientHandler implements Runnable {
         if( httpRequestHeaderSize > 0 ) {
         	parseContent = new byte[httpRequestHeaderSize];
         	in.read(parseContent);
-        	info("### (SERVER: RECEIVE) HTTP REQUEST HEADER ###\n"+new String(parseContent));
+        	info("### (SERVER: RECEIVE) ### HTTP REQUEST HEADER\n"+new String(parseContent));
         	httpRequestHeaders.write(parseContent);
         }
         
         if( httpResponseHeaderSize > 0 ) {
         	parseContent = new byte[httpResponseHeaderSize];
         	in.read(parseContent);
-        	info("### (SERVER: RECEIVE) HTTP RESPONSE HEADER ###\n"+new String(parseContent));
+        	info("### (SERVER: RECEIVE) ### HTTP RESPONSE HEADER\n"+new String(parseContent));
         	httpResponseHeaders.write(parseContent);
         }
 		
 		if( "req-body".equals(lastOffsetLabel) ) {
 			readBody(httpRequestBody);
-			info("### (SERVER: RECEIVE) HTTP REQUEST BODY ###\n"+new String(httpRequestBody.toByteArray()));
+			info("### (SERVER: RECEIVE) ### HTTP REQUEST BODY\n"+new String(httpRequestBody.toByteArray()));
 		}
 		
 		if( "res-body".equals(lastOffsetLabel) ) {
