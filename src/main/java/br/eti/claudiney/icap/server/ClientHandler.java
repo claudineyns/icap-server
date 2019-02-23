@@ -385,11 +385,13 @@ public class ClientHandler implements Runnable {
 	}
 	
 	private void sendContinue() throws IOException {
+		info("### (SERVER: SEND) ### ICAP RESPONSE: 100 Contine");
 		out.write("ICAP/1.0 100 Continue\r\n".getBytes());
 		out.write("\r\n".getBytes());
 	}
 	
 	private void sendBadRequest(String cause) throws IOException {
+		info("### (SERVER: SEND) ### ICAP RESPONSE: 400 Bad request");
 		out.write("ICAP/1.0 400 Bad request\r\n".getBytes());
 		if( cause == null ) {
 			sendCloseConnection();
@@ -404,11 +406,13 @@ public class ClientHandler implements Runnable {
 	}
 	
 	private void sendServiceNotFound() throws IOException {
+		info("### (SERVER: SEND) ### ICAP RESPONSE: 404 Service not found");
 		out.write("ICAP/1.0 404 Service not found\r\n".getBytes());
 		sendCloseConnection();
 	}
 	
 	private void sendMethodNotAllowed() throws IOException {
+		info("### (SERVER: SEND) ### ICAP RESPONSE: 405 Method not allowed");
 		out.write("ICAP/1.0 405 Method not allowed\r\n".getBytes());
 		sendCloseConnection();
 	}
@@ -445,6 +449,8 @@ public class ClientHandler implements Runnable {
 		}
 			
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
+		
+		info("### (SERVER: SEND) ### ICAP RESPONSE: 200 OK");
 		
 		out.write(("ICAP/1.0 200 OK\r\n").getBytes());
 		out.write(("Date: "+date+"\r\n").getBytes());
@@ -512,8 +518,10 @@ public class ClientHandler implements Runnable {
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
 		
 		if( httpRequestBody.size() == 0 && httpResponseBody.size() == 0 ) {
+			info("### (SERVER: SEND) ### ICAP RESPONSE: 204 No Content");
 			out.write(("ICAP/1.0 204 No Content\r\n").getBytes());
 		} else {
+			info("### (SERVER: SEND) ### ICAP RESPONSE: 200 OK");
 			out.write(("ICAP/1.0 200 OK\r\n").getBytes());
 		}
 		
@@ -533,6 +541,8 @@ public class ClientHandler implements Runnable {
 	private void continueResponseModification() throws IOException {
 		
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
+		
+		info("### (SERVER: SEND) ### ICAP RESPONSE: 200 OK");
 		
 		out.write(("ICAP/1.0 200 OK\r\n").getBytes());
 		out.write(("Date: "+date+"\r\n").getBytes());
