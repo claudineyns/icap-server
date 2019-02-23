@@ -287,7 +287,7 @@ public class ClientHandler implements Runnable {
 				} catch(NumberFormatException e) {
 					System.err.print("\n----------------------------------------------\n");
 					System.err.println(e.getMessage());
-					System.err.println();
+					System.err.print("\n----------------------------------------------\n");
 					System.err.print(new String(backupDebug.toByteArray()));
 					System.err.print("\n----------------------------------------------\n");
 					throw new IOException(e);
