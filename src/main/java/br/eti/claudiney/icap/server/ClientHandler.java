@@ -1,5 +1,6 @@
 package br.eti.claudiney.icap.server;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +27,7 @@ public class ClientHandler implements Runnable {
 		try {
 			serverName = Inet4Address.getLocalHost().getHostName();
 		} catch(IOException e) {
-			System.err.println("### SERVER ### Startup [WARNING] " +  e.getMessage());
+			warning("\n### SERVER ### [Startup] [WARNING]\n" +  e.getMessage());
 			serverName = "localhost";
 		}
 	}
@@ -41,13 +42,13 @@ public class ClientHandler implements Runnable {
 			out.close();
 			in.close();
 		} catch(IOException e) {
-			System.err.println("### SERVER ### " + e.getMessage());
+			warning("\n### SERVER ### [Cleanup] [WARNING] General error:\n" + e.getMessage());
 		}
 		
 		try {
 			client.close();
 		} catch(IOException e) {
-			System.err.println("### SERVER ### " + e.getMessage());
+			warning("\n### SERVER ### [Cleanup] [WARNING] General error:\n" + e.getMessage());
 		}
 		
 	}
@@ -179,14 +180,14 @@ public class ClientHandler implements Runnable {
         
         if( httpRequestHeaderSize > 0 ) {
         	parseContent = new byte[httpRequestHeaderSize];
-        	in.read(parseContent);
+        	readStream(parseContent);
         	info("### (SERVER: RECEIVE) ### HTTP REQUEST HEADER\n"+new String(parseContent));
         	httpRequestHeaders.write(parseContent);
         }
         
         if( httpResponseHeaderSize > 0 ) {
         	parseContent = new byte[httpResponseHeaderSize];
-        	in.read(parseContent);
+        	readStream(parseContent);
         	info("### (SERVER: RECEIVE) ### HTTP RESPONSE HEADER\n"+new String(parseContent));
         	httpResponseHeaders.write(parseContent);
         }
@@ -287,19 +288,12 @@ public class ClientHandler implements Runnable {
 				}
 				
 				int amountRead = Integer.parseInt(line.toString(), 16);
-				
-				int bytesAvailable = amountRead;
-				while( bytesAvailable > 0 ) {
-					int available = in.available();
-					int part = bytesAvailable;
-					if( part > available ) {
-						part = available;
-					}
-					cache = new byte[part];
-					in.read(cache);
+
+				if(amountRead > 0) {
+					cache = new byte[amountRead];
+					readStream(cache);
 					out.write(cache);
 					backupDebug.write(cache);
-					bytesAvailable -= part;
 				}
 				
 				int cr = -1, lf = -1;
@@ -752,8 +746,36 @@ public class ClientHandler implements Runnable {
 		
 	}
 	
+	//----------------------------------------
+	
+	private void readStream(byte[] out) throws IOException {
+		
+		byte[] reading = null;
+		ByteArrayOutputStream cache = new ByteArrayOutputStream();
+		
+		int total = out.length;
+		while(total > 0) {
+			int amount = total;
+			int available = in.available();
+			if(amount > available) {
+				amount = available;
+			}
+			reading = new byte[amount];
+			in.read(reading);
+			cache.write(reading);
+			total -= amount;
+		}
+		
+		new ByteArrayInputStream(cache.toByteArray()).read(out);
+		
+	}
+	
 	private void info(String message) {
-		Logger.getGlobal().info(message);
+//		Logger.getGlobal().info(message);
+	}
+	
+	private void warning(String message) {
+		Logger.getGlobal().warning(message);
 	}
 	
 	private static void reset( int[]c ){
