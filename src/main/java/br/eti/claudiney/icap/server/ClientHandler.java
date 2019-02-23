@@ -190,7 +190,7 @@ public class ClientHandler implements Runnable {
 		
 		if( "res-body".equals(lastOffsetLabel) ) {
 			readBody(httpResponseBody); 
-			info("### (SERVER: RECEIVE) HTTP RESPONSE BODY ###\n"+new String(httpResponseBody.toByteArray()));
+			info("### (SERVER: RECEIVE) ### HTTP RESPONSE BODY\n"+new String(httpResponseBody.toByteArray()));
 		}
 		
 	}
@@ -199,6 +199,8 @@ public class ClientHandler implements Runnable {
         
         boolean previewIsEnough = false;
 		if( previewHeader != null ) {
+			
+			info("### (SERVER: RECEIVE) ### PREVIEW SENT BY CLIENT \n"+previewHeader);
 			
 			int contentPreview = Integer.parseInt(previewHeader);
 			if(contentPreview > 0) {
@@ -223,6 +225,8 @@ public class ClientHandler implements Runnable {
 		StringBuilder line = new StringBuilder("");
 		
 		int mark[] = new int[11];
+		reset(mark);
+		
 		int amountToRead = -1;
 		
 		while(true) {
