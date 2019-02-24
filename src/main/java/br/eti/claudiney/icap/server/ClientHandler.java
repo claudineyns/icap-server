@@ -595,7 +595,7 @@ public class ClientHandler implements Runnable {
 		}
 		
 		out.write(("Date: "+date+"\r\n").getBytes());
-		out.write(("Server: ICAP-Java-Server/1.0\r\n").getBytes());
+		out.write(("Server: "+serverName+"\r\n").getBytes());
 		out.write(("ISTag:\"ALPHA-B123456-GAMA\"\r\n").getBytes());
 		out.write(("Connection: close\r\n").getBytes());
 		
@@ -629,7 +629,7 @@ public class ClientHandler implements Runnable {
 		
 		out.write(("Date: "+date+"\r\n").getBytes());
 		out.write(("Server: "+serverName+"\r\n").getBytes());
-		out.write(("ISTag:\"ALPHA-B123456-GAMA\"\r\n").getBytes());
+		out.write(("ISTag: \"ALPHA-B123456-GAMA\"\r\n").getBytes());
 		out.write(("Connection: close\r\n").getBytes());
 		
 		if( serviceInProgress.startsWith("info") ) {
@@ -778,7 +778,7 @@ public class ClientHandler implements Runnable {
 			outHttpResponseHeaders.write("HTTP/1.1 200 OK\r\n".getBytes());
 		}
 		
-		outHttpResponseHeaders.write(("Server:"+serverName+"\r\n").getBytes());
+		outHttpResponseHeaders.write(("Server: "+serverName+"\r\n").getBytes());
 		
 		StringBuilder responseMessage = new StringBuilder("");
 		
@@ -795,7 +795,7 @@ public class ClientHandler implements Runnable {
 			
 		}
 		
-		outHttpResponseHeaders.write(("Via:"+serverName+"\r\n").getBytes());
+		outHttpResponseHeaders.write(("Via: "+serverName+"\r\n").getBytes());
 		
 		if( icapThreatsHeader.size() > 0 ) {
 			outHttpResponseHeaders.write(icapThreatsHeader.toByteArray());
