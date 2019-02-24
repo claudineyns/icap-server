@@ -14,6 +14,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import br.eti.claudiney.windowsdefender.WindowsDefenderAntivirus;
+import br.eti.claudiney.windowsdefender.WindowsDefenderResponse;
+
 public class ClientHandler implements Runnable {
 	
 	private Socket client;
@@ -577,9 +580,13 @@ public class ClientHandler implements Runnable {
 	
 	private void continueRequestModification() throws Exception {
 		
+		if( serviceInProgress.startsWith("virus_scan") ) {
+			findThreatsInPayload();
+		}
+		
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
 		
-		if( httpRequestBody.size() == 0 ) {
+		if( serviceInProgress.startsWith("echo") && httpRequestBody.size() == 0 ) {
 			info("### (SERVER: SEND) ### ICAP RESPONSE: 204 No Content");
 			out.write(("ICAP/1.0 204 No Content\r\n").getBytes());
 		} else {
@@ -602,14 +609,22 @@ public class ClientHandler implements Runnable {
 	
 	private void continueResponseModification() throws Exception {
 		
+		if( serviceInProgress.startsWith("virus_scan") ) {
+			findThreatsInPayload();
+		}
+		
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
 		
-		if( httpResponseBody.size() == 0 ) {
+		if( serviceInProgress.startsWith("echo") && httpResponseBody.size() == 0 ) {
+			
 			info("### (SERVER: SEND) ### ICAP RESPONSE: 204 No Content");
 			out.write(("ICAP/1.0 204 No Content\r\n").getBytes());
+			
 		} else {
+			
 			info("### (SERVER: SEND) ### ICAP RESPONSE: 200 OK");
 			out.write(("ICAP/1.0 200 OK\r\n").getBytes());
+			
 		}
 		
 		out.write(("Date: "+date+"\r\n").getBytes());
@@ -757,18 +772,36 @@ public class ClientHandler implements Runnable {
 		ByteArrayOutputStream outHttpResponseHeaders = new ByteArrayOutputStream();
 		ByteArrayOutputStream outHttpResponseBody    = new ByteArrayOutputStream();
 		
-		String responseMessage = "Virus found: Thread/Monster:1-Globster";
+		if( icapThreatsHeader.size() > 0 ) {
+			outHttpResponseHeaders.write("HTTP/1.1 403 Forbidden\r\n".getBytes());
+		} else {
+			outHttpResponseHeaders.write("HTTP/1.1 200 OK\r\n".getBytes());
+		}
 		
-		outHttpResponseHeaders.write("HTTP/1.1 403 Forbidden\r\n".getBytes());
 		outHttpResponseHeaders.write(("Server:"+serverName+"\r\n").getBytes());
-		outHttpResponseHeaders.write(("Content-Type: text/plain\r\n").getBytes());
-		outHttpResponseHeaders.write(("Content-Length: "+responseMessage.length()+"\r\n").getBytes());
-		outHttpResponseHeaders.write(("Via:"+serverName+"\r\n").getBytes());
-		outHttpResponseHeaders.write("\r\n".getBytes());
 		
-		outHttpResponseBody.write((Integer.toHexString(responseMessage.length())+"\r\n").getBytes());
-		outHttpResponseBody.write(responseMessage.getBytes());
-		outHttpResponseBody.write("\r\n".getBytes());
+		StringBuilder responseMessage = new StringBuilder("");
+		
+		if( threatName != null ) {
+			
+			responseMessage.append("Virus Found: ").append(threatName);
+			
+			outHttpResponseHeaders.write(("Content-Type: text/plain\r\n").getBytes());
+			outHttpResponseHeaders.write(("Content-Length: "+responseMessage.length()+"\r\n").getBytes());
+			
+			outHttpResponseBody.write((Integer.toHexString(responseMessage.length())+"\r\n").getBytes());
+			outHttpResponseBody.write(responseMessage.toString().getBytes());
+			outHttpResponseBody.write("\r\n".getBytes());
+			
+		}
+		
+		outHttpResponseHeaders.write(("Via:"+serverName+"\r\n").getBytes());
+		
+		if( icapThreatsHeader.size() > 0 ) {
+			outHttpResponseHeaders.write(icapThreatsHeader.toByteArray());
+		}
+		
+		outHttpResponseHeaders.write("\r\n".getBytes());
 		
 		if(outHttpRequestHeaders.size() > 0) {
 			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
@@ -831,6 +864,31 @@ public class ClientHandler implements Runnable {
 		
 		if(eof) {
 			finishResponse();
+		}
+		
+	}
+	
+	private ByteArrayOutputStream icapThreatsHeader = new ByteArrayOutputStream(); 
+	private String threatName = null;
+	
+	private void findThreatsInPayload() throws Exception {
+		
+		WindowsDefenderAntivirus antivirus = new WindowsDefenderAntivirus();
+		
+		WindowsDefenderResponse response = null;
+		
+		if( httpRequestBody.size() > 0 ) {
+			response = antivirus.checkThreat(httpRequestBody.toByteArray());
+		} else if( httpResponseBody.size() > 0 ) {
+			response = antivirus.checkThreat(httpResponseBody.toByteArray());
+		}
+
+		for( String threat: response.getThreatList() ) {
+			threatName = threat;
+			icapThreatsHeader.write(("X-Threat-Description: "+threatName+"\r\n").getBytes());
+			icapThreatsHeader.write(("X-Threat-Resolution: None\r\n").getBytes());
+			icapThreatsHeader.write(("X-Threat-Type: Threat\r\n").getBytes());
+			break;
 		}
 		
 	}
