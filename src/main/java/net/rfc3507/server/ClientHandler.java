@@ -1,4 +1,4 @@
-package br.eti.claudiney.icap.server;
+package net.rfc3507.server;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,8 +14,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import br.eti.claudiney.windowsdefender.WindowsDefenderAntivirus;
-import br.eti.claudiney.windowsdefender.WindowsDefenderResponse;
+import net.rfc3507.av.windowsdefender.WindowsDefenderAntivirus;
+import net.rfc3507.av.windowsdefender.WindowsDefenderResponse;
 
 public class ClientHandler implements Runnable {
 	

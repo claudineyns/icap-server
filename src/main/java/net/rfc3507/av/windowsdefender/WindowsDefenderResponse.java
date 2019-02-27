@@ -1,4 +1,4 @@
-package br.eti.claudiney.windowsdefender;
+package net.rfc3507.av.windowsdefender;
 
 import java.io.Serializable;
 import java.util.Collections;

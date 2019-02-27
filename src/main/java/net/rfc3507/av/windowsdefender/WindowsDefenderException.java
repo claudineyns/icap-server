@@ -1,4 +1,4 @@
-package br.eti.claudiney.windowsdefender;
+package net.rfc3507.av.windowsdefender;
 
 @SuppressWarnings("serial")
 public class WindowsDefenderException extends Exception {

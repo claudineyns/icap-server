@@ -1,4 +1,4 @@
-package br.eti.claudiney.icap.server;
+package net.rfc3507.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -15,8 +15,6 @@ public class Daemon {
 	private void start() throws IOException {
 		
 		ServerSocket server = new ServerSocket(1344);
-		
-		System.out.println("### SERVER ### Ready to listen!");
 		
 		while(true) {
 			Socket client = null;

@@ -3,12 +3,31 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>br.eti.claudiney.icap</groupId>
+	<groupId>net.rfc3507</groupId>
 	<artifactId>icap-server</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.0-RC</version>
+	
 	<name>icap-server</name>
-	<description>icap-server</description>
-
+	<description>ICAP Server Implementation for RFC 3507</description>
+	
+	<developers>
+		<developer>
+			<id>claudineynascimento</id>
+			<name>Claudiney Nascimento</name>
+			<email>contato@claudiney.info</email>
+			<url>https://github.com/claudineynascimento/</url>
+		</developer>
+	</developers>
+	
+	<url>https://github.com/claudineynascimento/icap-server</url>
+	
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>https://raw.githubusercontent.com/claudineynascimento/icap-server/master/LICENSE</url>
+		</license>
+	</licenses>
+	
 	<dependencies>
 
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
@@ -46,7 +65,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>br.eti.claudiney.icap.server.Daemon</mainClass>
+									<mainClass>net.rfc3507.server.Daemon</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
