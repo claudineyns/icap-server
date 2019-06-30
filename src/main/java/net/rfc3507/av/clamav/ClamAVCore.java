@@ -71,7 +71,7 @@ public class ClamAVCore {
 	private ClamAVResponse scanContent(File file) throws ClamAVException {
 		
 		String path = file.getParent();
-		Logger.getGlobal().info("Scanning file: " + path+file.getName() + "...");
+		Logger.getGlobal().info("Scanning file: " + path+"/"+file.getName() + "...");
 		Logger.getGlobal().info("Scanning path: " + path + "...");
 		
 		List<String> daemonExec = new LinkedList<>();

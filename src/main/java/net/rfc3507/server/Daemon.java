@@ -3,6 +3,7 @@ package net.rfc3507.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 public class Daemon {
 
@@ -16,10 +17,13 @@ public class Daemon {
 		
 		ServerSocket server = new ServerSocket(1344);
 		
+		Logger.getGlobal().info("[ICAP-SERVER] Listening on port 1344");
+		
 		while(true) {
 			Socket client = null;
 			try {
 				client = server.accept();
+				Logger.getGlobal().info("[ICAP-SERVER] Connection received!");
 			} catch(IOException e) {
 				e.printStackTrace();
 				break;
