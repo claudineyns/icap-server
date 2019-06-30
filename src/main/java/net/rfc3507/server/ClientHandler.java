@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.rfc3507.av.clamav.ClamAVCore;
+import net.rfc3507.av.clamav.ClamAVResponse;
 import net.rfc3507.av.windowsdefender.WindowsDefenderAntivirus;
 import net.rfc3507.av.windowsdefender.WindowsDefenderResponse;
 
@@ -873,6 +875,18 @@ public class ClientHandler implements Runnable {
 	
 	private void findThreatsInPayload() throws Exception {
 		
+		String environment = System.getProperty("java.os");
+		
+		if(environment.toLowerCase().contains("windows")) {
+			findThreatsInPayloadOnWindows();
+		} else {
+			findThreatsInPayloadOnLinux();
+		}
+		
+	}
+	
+	private void findThreatsInPayloadOnWindows() throws Exception {
+		
 		WindowsDefenderAntivirus antivirus = new WindowsDefenderAntivirus();
 		
 		WindowsDefenderResponse response = null;
@@ -889,6 +903,27 @@ public class ClientHandler implements Runnable {
 			icapThreatsHeader.write(("X-Threat-Resolution: None\r\n").getBytes());
 			icapThreatsHeader.write(("X-Threat-Type: Threat\r\n").getBytes());
 			break;
+		}
+		
+	}
+	
+	private void findThreatsInPayloadOnLinux() throws Exception {
+		
+		ClamAVCore antivirus = new ClamAVCore();
+		
+		ClamAVResponse response = null;
+		
+		if( httpRequestBody.size() > 0 ) {
+			response = antivirus.checkThreat(httpRequestBody.toByteArray());
+		} else if( httpResponseBody.size() > 0 ) {
+			response = antivirus.checkThreat(httpResponseBody.toByteArray());
+		}
+
+		if( response.getThreat() != null ) {
+			threatName = response.getThreat();
+			icapThreatsHeader.write(("X-Threat-Description: "+threatName+"\r\n").getBytes());
+			icapThreatsHeader.write(("X-Threat-Resolution: None\r\n").getBytes());
+			icapThreatsHeader.write(("X-Threat-Type: Threat\r\n").getBytes());
 		}
 		
 	}

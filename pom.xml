@@ -6,7 +6,7 @@
 
 	<groupId>net.rfc3507</groupId>
 	<artifactId>icap-server</artifactId>
-	<version>1.0.0-RC</version>
+	<version>1.0.0-RC02</version>
 	
 	<name>icap-server</name>
 	<description>ICAP Server Implementation for RFC 3507</description>
