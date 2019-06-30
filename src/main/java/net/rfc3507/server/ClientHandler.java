@@ -875,11 +875,15 @@ public class ClientHandler implements Runnable {
 	
 	private void findThreatsInPayload() throws Exception {
 		
+		System.out.println("[ICAP-SERVER] Checking Threats...");
+		
 		String environment = System.getProperty("java.os");
 		
 		if(environment.toLowerCase().contains("windows")) {
+			System.out.println("[ICAP-SERVER] Checking Threats (Windows)...");
 			findThreatsInPayloadOnWindows();
 		} else {
+			System.out.println("[ICAP-SERVER] Checking Threats (Linux)...");
 			findThreatsInPayloadOnLinux();
 		}
 		
