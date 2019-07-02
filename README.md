@@ -37,7 +37,7 @@ This project uses [SemVer](http://semver.org/) for versioning.
 
 ## Authors
 
-* **Claudiney Nascimento** - *Initial work* - [claudineynascimento](https://github.com/claudineynascimento)
+* **Claudiney Nascimento** - *Initial work* - [claudineyns](https://github.com/claudineyns)
 
 ## License
 
