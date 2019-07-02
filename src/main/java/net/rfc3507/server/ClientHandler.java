@@ -10,10 +10,13 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.rfc3507.av.clamav.ClamAVCore;
+import net.rfc3507.av.clamav.ClamAVResponse;
 import net.rfc3507.av.windowsdefender.WindowsDefenderAntivirus;
 import net.rfc3507.av.windowsdefender.WindowsDefenderResponse;
 
@@ -119,8 +122,6 @@ public class ClientHandler implements Runnable {
 					&& memory[memory.length-2] == '\r' 
 					&& memory[memory.length-1] == '\n' ) {
 					
-					info("### (SERVER: RECEIVE) ### ICAP REQUEST\n"+new String(memory));
-					
 					analyseRequestHeader(memory);
 					break;
 					
@@ -184,25 +185,21 @@ public class ClientHandler implements Runnable {
         if( httpRequestHeaderSize > 0 ) {
         	parseContent = new byte[httpRequestHeaderSize];
         	readStream(parseContent);
-        	info("### (SERVER: RECEIVE) ### HTTP REQUEST HEADER\n"+new String(parseContent));
         	httpRequestHeaders.write(parseContent);
         }
         
         if( httpResponseHeaderSize > 0 ) {
         	parseContent = new byte[httpResponseHeaderSize];
         	readStream(parseContent);
-        	info("### (SERVER: RECEIVE) ### HTTP RESPONSE HEADER\n"+new String(parseContent));
         	httpResponseHeaders.write(parseContent);
         }
 		
 		if( "req-body".equals(lastOffsetLabel) ) {
 			readBody(httpRequestBody);
-			info("### (SERVER: RECEIVE) ### HTTP REQUEST BODY\n"+new String(httpRequestBody.toByteArray()));
 		}
 		
 		if( "res-body".equals(lastOffsetLabel) ) {
 			readBody(httpResponseBody); 
-			info("### (SERVER: RECEIVE) ### HTTP RESPONSE BODY\n"+new String(httpResponseBody.toByteArray()));
 		}
 		
 	}
@@ -429,13 +426,11 @@ public class ClientHandler implements Runnable {
 	}
 	
 	private void sendContinue() throws IOException {
-		info("### (SERVER: SEND) ### ICAP RESPONSE: 100 Continue");
 		out.write("ICAP/1.0 100 Continue\r\n".getBytes());
 		out.write("\r\n".getBytes());
 	}
 	
 	private void sendBadRequest(String cause) throws IOException {
-		info("### (SERVER: SEND) ### ICAP RESPONSE: 400 Bad request");
 		out.write("ICAP/1.0 400 Bad request\r\n".getBytes());
 		if( cause == null ) {
 			sendCloseConnection();
@@ -450,19 +445,16 @@ public class ClientHandler implements Runnable {
 	}
 	
 	private void sendServiceNotFound() throws IOException {
-		info("### (SERVER: SEND) ### ICAP RESPONSE: 404 Service not found");
 		out.write("ICAP/1.0 404 Service not found\r\n".getBytes());
 		sendCloseConnection();
 	}
 	
 	private void sendMethodNotAllowed() throws IOException {
-		info("### (SERVER: SEND) ### ICAP RESPONSE: 405 Method not allowed");
 		out.write("ICAP/1.0 405 Method not allowed\r\n".getBytes());
 		sendCloseConnection();
 	}
 	
 	private void sendServerError(String cause) throws IOException {
-		info("### (SERVER: SEND) ### ICAP RESPONSE: 500 Server Error");
 		out.write("ICAP/1.0 500 Server Error\r\n".getBytes());
 		if( cause == null ) {
 			sendCloseConnection();
@@ -511,8 +503,6 @@ public class ClientHandler implements Runnable {
 			
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
 		
-		info("### (SERVER: SEND) ### ICAP RESPONSE: 200 OK");
-		
 		out.write(("ICAP/1.0 200 OK\r\n").getBytes());
 		out.write(("Date: "+date+"\r\n").getBytes());
 		out.write(("Server: "+serverName+"\r\n").getBytes());
@@ -525,8 +515,8 @@ public class ClientHandler implements Runnable {
 			out.write(("Methods: "+REQMOD+", "+RESPMOD+"\r\n").getBytes());
 		}
 		
-		out.write(("Service: Java-Tech-Server/1.0\r\n").getBytes());
-		out.write(("ISTag:\"ALPHA-B123456-GAMA\"\r\n").getBytes());
+		out.write(("Service: ICAP-Server-Java/1.0\r\n").getBytes());
+		out.write(("ISTag:\""+UUID.randomUUID().toString()+"\"\r\n").getBytes());
 		out.write(("Allow: 204\r\n").getBytes());
 		out.write(("Preview: 0\r\n").getBytes());
 		out.write(("Transfer-Complete: *\r\n").getBytes());
@@ -587,10 +577,8 @@ public class ClientHandler implements Runnable {
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
 		
 		if( serviceInProgress.startsWith("echo") && httpRequestBody.size() == 0 ) {
-			info("### (SERVER: SEND) ### ICAP RESPONSE: 204 No Content");
 			out.write(("ICAP/1.0 204 No Content\r\n").getBytes());
 		} else {
-			info("### (SERVER: SEND) ### ICAP RESPONSE: 200 OK");
 			out.write(("ICAP/1.0 200 OK\r\n").getBytes());
 		}
 		
@@ -617,12 +605,10 @@ public class ClientHandler implements Runnable {
 		
 		if( serviceInProgress.startsWith("echo") && httpResponseBody.size() == 0 ) {
 			
-			info("### (SERVER: SEND) ### ICAP RESPONSE: 204 No Content");
 			out.write(("ICAP/1.0 204 No Content\r\n").getBytes());
 			
 		} else {
 			
-			info("### (SERVER: SEND) ### ICAP RESPONSE: 200 OK");
 			out.write(("ICAP/1.0 200 OK\r\n").getBytes());
 			
 		}
@@ -725,33 +711,27 @@ public class ClientHandler implements Runnable {
 			encapsulatedHeaderEcho.append("null-body=").append(offset);
 		}
 		
-		info("### (SERVER: SEND) ### ICAP RESPONSE HEADER\n<Encapsulated>: " + encapsulatedHeaderEcho);
-		
 		out.write(("Encapsulated: "+encapsulatedHeaderEcho+"\r\n").getBytes());
 		out.write("\r\n".getBytes());
 		
 		boolean eof = false;
 		if(httpRequestHeaders.size() > 0) {
 			eof = true;
-			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP REQUEST HEADER\n" + new String(httpRequestHeaders.toByteArray()));
 			out.write(httpRequestHeaders.toByteArray());
 		}
 		
 		if(outHttpRequestBody.size() > 0) {
 			eof = true;
-			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP REQUEST BODY\n" + new String(outHttpRequestBody.toByteArray()));
 			out.write(outHttpRequestBody.toByteArray());
 		}
 		
 		if(httpResponseHeaders.size() > 0) {
 			eof = true;
-			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP RESPONSE HEADER\n" + new String(httpResponseHeaders.toByteArray()));
 			out.write(httpResponseHeaders.toByteArray());
 		}
 		
 		if(outHttpResponseBody.size() > 0) {
 			eof = true;
-			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP RESPONSE BODY\n" + new String(outHttpResponseBody.toByteArray()));
 			out.write(outHttpResponseBody.toByteArray());
 		}
 		
@@ -784,7 +764,7 @@ public class ClientHandler implements Runnable {
 		
 		if( threatName != null ) {
 			
-			responseMessage.append("Virus Found: ").append(threatName);
+			responseMessage.append("Virus Found: ").append(threatName).append("\n");
 			
 			outHttpResponseHeaders.write(("Content-Type: text/plain\r\n").getBytes());
 			outHttpResponseHeaders.write(("Content-Length: "+responseMessage.length()+"\r\n").getBytes());
@@ -832,33 +812,27 @@ public class ClientHandler implements Runnable {
 			encapsulatedHeaderEcho.append("null-body=").append(offset);
 		}
 		
-		info("### (SERVER: SEND) ### ICAP RESPONSE HEADER\n<Encapsulated>: " + encapsulatedHeaderEcho);
-		
 		out.write(("Encapsulated: "+encapsulatedHeaderEcho+"\r\n").getBytes());
 		out.write("\r\n".getBytes());
 		
 		boolean eof = false;
 		if(outHttpRequestHeaders.size() > 0) {
 			eof = true;
-			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP REQUEST HEADER\n" + new String(outHttpRequestHeaders.toByteArray()));
 			out.write(outHttpRequestHeaders.toByteArray());
 		}
 		
 		if(outHttpRequestBody.size() > 0) {
 			eof = true;
-			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP REQUEST BODY\n" + new String(outHttpRequestBody.toByteArray()));
 			out.write(outHttpRequestBody.toByteArray());
 		}
 		
 		if(outHttpResponseHeaders.size() > 0) {
 			eof = true;
-			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP RESPONSE HEADER\n" + new String(outHttpResponseHeaders.toByteArray()));
 			out.write(outHttpResponseHeaders.toByteArray());
 		}
 		
 		if(outHttpResponseBody.size() > 0) {
 			eof = true;
-			info("### (SERVER: SEND) ### ICAP RESPONSE: HTTP RESPONSE BODY\n" + new String(outHttpResponseBody.toByteArray()));
 			out.write(outHttpResponseBody.toByteArray());
 		}
 		
@@ -872,6 +846,18 @@ public class ClientHandler implements Runnable {
 	private String threatName = null;
 	
 	private void findThreatsInPayload() throws Exception {
+		
+		String environment = System.getProperty("os.name");
+		
+		if(environment.toLowerCase().contains("windows")) {
+			findThreatsInPayloadOnWindows();
+		} else {
+			findThreatsInPayloadOnLinux();
+		}
+		
+	}
+	
+	private void findThreatsInPayloadOnWindows() throws Exception {
 		
 		WindowsDefenderAntivirus antivirus = new WindowsDefenderAntivirus();
 		
@@ -889,6 +875,27 @@ public class ClientHandler implements Runnable {
 			icapThreatsHeader.write(("X-Threat-Resolution: None\r\n").getBytes());
 			icapThreatsHeader.write(("X-Threat-Type: Threat\r\n").getBytes());
 			break;
+		}
+		
+	}
+	
+	private void findThreatsInPayloadOnLinux() throws Exception {
+		
+		ClamAVCore antivirus = new ClamAVCore();
+		
+		ClamAVResponse response = null;
+		
+		if( httpRequestBody.size() > 0 ) {
+			response = antivirus.checkThreat(httpRequestBody.toByteArray());
+		} else if( httpResponseBody.size() > 0 ) {
+			response = antivirus.checkThreat(httpResponseBody.toByteArray());
+		}
+
+		if( response.getThreat() != null ) {
+			threatName = response.getThreat();
+			icapThreatsHeader.write(("X-Threat-Description: "+threatName+"\r\n").getBytes());
+			icapThreatsHeader.write(("X-Threat-Resolution: None\r\n").getBytes());
+			icapThreatsHeader.write(("X-Threat-Type: Threat\r\n").getBytes());
 		}
 		
 	}
@@ -915,10 +922,6 @@ public class ClientHandler implements Runnable {
 		
 		new ByteArrayInputStream(cache.toByteArray()).read(out);
 		
-	}
-	
-	private void info(String message) {
-//		Logger.getGlobal().info(message);
 	}
 	
 	private void warning(String message) {

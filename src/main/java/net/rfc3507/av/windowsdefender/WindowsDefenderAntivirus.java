@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -15,8 +16,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 
 public class WindowsDefenderAntivirus {
-	
-	private static String checkResult = "";
 	
 	public WindowsDefenderResponse checkThreat(byte[] content) 
 			throws WindowsDefenderException {
@@ -74,7 +73,10 @@ public class WindowsDefenderAntivirus {
 			throw new WindowsDefenderException(e.getMessage());
 		}
 		
-		checkResult = new String(response.toByteArray());
+		String checkResult = null;
+		try {
+			checkResult = new String(response.toByteArray(), "ascii");
+		} catch(UnsupportedEncodingException e) {}
 		
 		Pattern pattern = Pattern.compile("^Threat\\s{18}:\\s(\\S*)", Pattern.MULTILINE);
 		Matcher matcher = pattern.matcher(checkResult);
@@ -93,7 +95,6 @@ public class WindowsDefenderAntivirus {
 		
 		File file = new File(
 				System.getProperty("java.io.tmpdir"),
-//				"C:\\temp\\malware\\",
 				UUID.randomUUID().toString()+".threat");
 		
 		OutputStream out = null;
