@@ -19,6 +19,16 @@ Java JDK 1.8 or higher.
 
 Just clone this project on your favorite Java-Compatible IDE and have fun. 
 
+## Available ICAP endpoints
+
+Once started the server will listen on `127.0.0.1:1344` and the following endpoints are going to be available:
+
+| URI  | Supported Methods |
+| ------------- | ------------- |
+| `/info`  | OPTIONS, RESPMOD  |
+| `/echo`  | OPTIONS, REQMOD, RESPMOD | 
+| `/virus_scan`  | OPTIONS, REQMOD, RESPMOD |
+
 ## Deployment
 
 .
