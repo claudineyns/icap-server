@@ -5,19 +5,28 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Logger;
 
-public class Daemon {
+public class Worker {
 
 	public static void main(String[] args) throws IOException {
-		
-		new Daemon().start();
-		
+		new Worker().start();
 	}
+	
+	private final Logger logger = Logger.getGlobal();
+	
+	private ServerSocket server;
 	
 	private void start() throws IOException {
 		
-		ServerSocket server = new ServerSocket(1344);
+		this.server = new ServerSocket(1344);
 		
-		Logger.getGlobal().info("[ICAP-SERVER] Listening on port 1344");
+		final Thread shutdown = new Thread(()->{
+			try { server.close(); } catch(IOException e) {}
+			logger.info("[ICAP-SERVER] Service terminated.");
+		});
+
+		Runtime.getRuntime().addShutdownHook(shutdown);
+		
+		logger.info("[ICAP-SERVER] Listening on port 1344");
 		
 		while(true) {
 			Socket client = null;
@@ -30,8 +39,6 @@ public class Daemon {
 			}
 			new Thread(new ClientHandler(client)).start();
 		}
-		
-		server.close();
 		
 	}
 	
