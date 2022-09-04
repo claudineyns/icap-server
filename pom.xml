@@ -66,7 +66,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>net.rfc3507.server.Daemon</mainClass>
+									<mainClass>net.rfc3507.server.Worker</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
