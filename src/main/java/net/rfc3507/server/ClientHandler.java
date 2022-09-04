@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Inet4Address;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -56,6 +57,8 @@ public class ClientHandler implements Runnable {
 		} catch(IOException e) {
 			warning("\n### SERVER ### [Cleanup] [WARNING] General error:\n" + e.getMessage());
 		}
+		
+		info("\n### SERVER ### [Cleanup] [INFO] Client request completed.\n");
 		
 	}
 	
@@ -416,54 +419,54 @@ public class ClientHandler implements Runnable {
 	}
 	
 	private void finishResponse() throws IOException {
-		out.write("0\r\n\r\n".getBytes());
+		out.write("0\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
 	}
 	
 	private void sendCloseConnection() throws IOException {
-		out.write("Connection: close\r\n".getBytes());
-		out.write(("Encapsulated: null-body=0\r\n").getBytes());
-		out.write("\r\n".getBytes());
+		out.write("Connection: close\r\n".getBytes(StandardCharsets.US_ASCII));
+		out.write(("Encapsulated: null-body=0\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write("\r\n".getBytes(StandardCharsets.US_ASCII));
 	}
 	
 	private void sendContinue() throws IOException {
-		out.write("ICAP/1.0 100 Continue\r\n".getBytes());
-		out.write("\r\n".getBytes());
+		out.write("ICAP/1.0 100 Continue\r\n".getBytes(StandardCharsets.US_ASCII));
+		out.write("\r\n".getBytes(StandardCharsets.US_ASCII));
 	}
 	
 	private void sendBadRequest(String cause) throws IOException {
-		out.write("ICAP/1.0 400 Bad request\r\n".getBytes());
+		out.write("ICAP/1.0 400 Bad request\r\n".getBytes(StandardCharsets.US_ASCII));
 		if( cause == null ) {
 			sendCloseConnection();
 		} else {
-			out.write("Connection: close\r\n".getBytes());
-			out.write(("Encapsulated: opt-body=0\r\n").getBytes());
-			out.write("\r\n".getBytes());
-			out.write((Integer.toHexString(cause.length())+"\r\n").getBytes());
-			out.write((cause+"\r\n").getBytes());
+			out.write("Connection: close\r\n".getBytes(StandardCharsets.US_ASCII));
+			out.write(("Encapsulated: opt-body=0\r\n").getBytes(StandardCharsets.US_ASCII));
+			out.write("\r\n".getBytes(StandardCharsets.US_ASCII));
+			out.write((Integer.toHexString(cause.length())+"\r\n").getBytes(StandardCharsets.US_ASCII));
+			out.write((cause+"\r\n").getBytes(StandardCharsets.US_ASCII));
 			finishResponse();
 		}
 	}
 	
 	private void sendServiceNotFound() throws IOException {
-		out.write("ICAP/1.0 404 Service not found\r\n".getBytes());
+		out.write("ICAP/1.0 404 Service not found\r\n".getBytes(StandardCharsets.US_ASCII));
 		sendCloseConnection();
 	}
 	
 	private void sendMethodNotAllowed() throws IOException {
-		out.write("ICAP/1.0 405 Method not allowed\r\n".getBytes());
+		out.write("ICAP/1.0 405 Method not allowed\r\n".getBytes(StandardCharsets.US_ASCII));
 		sendCloseConnection();
 	}
 	
 	private void sendServerError(String cause) throws IOException {
-		out.write("ICAP/1.0 500 Server Error\r\n".getBytes());
+		out.write("ICAP/1.0 500 Server Error\r\n".getBytes(StandardCharsets.US_ASCII));
 		if( cause == null ) {
 			sendCloseConnection();
 		} else {
-			out.write("Connection: close\r\n".getBytes());
-			out.write(("Encapsulated: opt-body=0\r\n").getBytes());
-			out.write("\r\n".getBytes());
-			out.write((Integer.toHexString(cause.length())+"\r\n").getBytes());
-			out.write((cause+"\r\n").getBytes());
+			out.write("Connection: close\r\n".getBytes(StandardCharsets.US_ASCII));
+			out.write(("Encapsulated: opt-body=0\r\n").getBytes(StandardCharsets.US_ASCII));
+			out.write("\r\n".getBytes(StandardCharsets.US_ASCII));
+			out.write((Integer.toHexString(cause.length())+"\r\n").getBytes(StandardCharsets.US_ASCII));
+			out.write((cause+"\r\n").getBytes(StandardCharsets.US_ASCII));
 			finishResponse();
 		}
 	}
@@ -503,25 +506,25 @@ public class ClientHandler implements Runnable {
 			
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
 		
-		out.write(("ICAP/1.0 200 OK\r\n").getBytes());
-		out.write(("Date: "+date+"\r\n").getBytes());
-		out.write(("Server: "+serverName+"\r\n").getBytes());
+		out.write(("ICAP/1.0 200 OK\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("Date: "+date+"\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("Server: "+serverName+"\r\n").getBytes(StandardCharsets.US_ASCII));
 		
 		if( service2.startsWith("info")) {
-			out.write(("Methods: "+RESPMOD+"\r\n").getBytes());
+			out.write(("Methods: "+RESPMOD+"\r\n").getBytes(StandardCharsets.US_ASCII));
 		} else if( service2.startsWith("echo")) {
-			out.write(("Methods: "+REQMOD+", "+RESPMOD+"\r\n").getBytes());
+			out.write(("Methods: "+REQMOD+", "+RESPMOD+"\r\n").getBytes(StandardCharsets.US_ASCII));
 		} else if( service2.startsWith("virus_scan")) {
-			out.write(("Methods: "+REQMOD+", "+RESPMOD+"\r\n").getBytes());
+			out.write(("Methods: "+REQMOD+", "+RESPMOD+"\r\n").getBytes(StandardCharsets.US_ASCII));
 		}
 		
-		out.write(("Service: ICAP-Server-Java/1.0\r\n").getBytes());
-		out.write(("ISTag:\""+UUID.randomUUID().toString()+"\"\r\n").getBytes());
-		out.write(("Allow: 204\r\n").getBytes());
-		out.write(("Preview: 0\r\n").getBytes());
-		out.write(("Transfer-Complete: *\r\n").getBytes());
-		out.write(("Encapsulated: null-body=0\r\n").getBytes());
-		out.write(("\r\n").getBytes());
+		out.write(("Service: ICAP-Server-Java/1.0\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("ISTag:\""+UUID.randomUUID().toString()+"\"\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("Allow: 204\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("Preview: 0\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("Transfer-Complete: *\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("Encapsulated: null-body=0\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("\r\n").getBytes(StandardCharsets.US_ASCII));
 		
 		methodInProgress = OPTIONS;
 		
@@ -577,15 +580,15 @@ public class ClientHandler implements Runnable {
 		String date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date());
 		
 		if( serviceInProgress.startsWith("echo") && httpRequestBody.size() == 0 ) {
-			out.write(("ICAP/1.0 204 No Content\r\n").getBytes());
+			out.write(("ICAP/1.0 204 No Content\r\n").getBytes(StandardCharsets.US_ASCII));
 		} else {
-			out.write(("ICAP/1.0 200 OK\r\n").getBytes());
+			out.write(("ICAP/1.0 200 OK\r\n").getBytes(StandardCharsets.US_ASCII));
 		}
 		
-		out.write(("Date: "+date+"\r\n").getBytes());
-		out.write(("Server: "+serverName+"\r\n").getBytes());
-		out.write(("ISTag:\"ALPHA-B123456-GAMA\"\r\n").getBytes());
-		out.write(("Connection: close\r\n").getBytes());
+		out.write(("Date: "+date+"\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("Server: "+serverName+"\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("ISTag:\"ALPHA-B123456-GAMA\"\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("Connection: close\r\n").getBytes(StandardCharsets.US_ASCII));
 		
 		if( serviceInProgress.startsWith("echo") ) {
 			completeHandleEcho();
@@ -605,18 +608,18 @@ public class ClientHandler implements Runnable {
 		
 		if( serviceInProgress.startsWith("echo") && httpResponseBody.size() == 0 ) {
 			
-			out.write(("ICAP/1.0 204 No Content\r\n").getBytes());
+			out.write(("ICAP/1.0 204 No Content\r\n").getBytes(StandardCharsets.US_ASCII));
 			
 		} else {
 			
-			out.write(("ICAP/1.0 200 OK\r\n").getBytes());
+			out.write(("ICAP/1.0 200 OK\r\n").getBytes(StandardCharsets.US_ASCII));
 			
 		}
 		
-		out.write(("Date: "+date+"\r\n").getBytes());
-		out.write(("Server: "+serverName+"\r\n").getBytes());
-		out.write(("ISTag: \"ALPHA-B123456-GAMA\"\r\n").getBytes());
-		out.write(("Connection: close\r\n").getBytes());
+		out.write(("Date: "+date+"\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("Server: "+serverName+"\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("ISTag: \"ALPHA-B123456-GAMA\"\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write(("Connection: close\r\n").getBytes(StandardCharsets.US_ASCII));
 		
 		if( serviceInProgress.startsWith("info") ) {
 			completeHandleInfo(date);
@@ -660,11 +663,11 @@ public class ClientHandler implements Runnable {
 		httpResponseHeader.append(("Via: 1.0 "+serverName+"\r\n"));
 		httpResponseHeader.append("\r\n");
 		
-		out.write(("Encapsulated: res-hdr=0, res-body="+httpResponseHeader.length()+"\r\n").getBytes());
-		out.write("\r\n".getBytes());
+		out.write(("Encapsulated: res-hdr=0, res-body="+httpResponseHeader.length()+"\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write("\r\n".getBytes(StandardCharsets.US_ASCII));
 		
-		out.write(httpResponseHeader.toString().getBytes());
-		out.write(chunkedBody.toString().getBytes());
+		out.write(httpResponseHeader.toString().getBytes(StandardCharsets.US_ASCII));
+		out.write(chunkedBody.toString().getBytes(StandardCharsets.US_ASCII));
 		
 	}
 	
@@ -682,9 +685,9 @@ public class ClientHandler implements Runnable {
 		
 		ByteArrayOutputStream outHttpRequestBody = new ByteArrayOutputStream();
 		if( httpRequestBody.size() > 0 ) {
-			outHttpRequestBody.write((Integer.toHexString(httpRequestBody.size())+"\r\n").getBytes());
+			outHttpRequestBody.write((Integer.toHexString(httpRequestBody.size())+"\r\n").getBytes(StandardCharsets.US_ASCII));
 			outHttpRequestBody.write(httpRequestBody.toByteArray());
-			outHttpRequestBody.write("\r\n".getBytes());
+			outHttpRequestBody.write("\r\n".getBytes(StandardCharsets.US_ASCII));
 			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
 			encapsulatedHeaderEcho.append("req-body=").append(offset);
 			offset += outHttpRequestBody.size();
@@ -698,9 +701,9 @@ public class ClientHandler implements Runnable {
 		
 		ByteArrayOutputStream outHttpResponseBody = new ByteArrayOutputStream();
 		if( httpResponseBody.size() > 0 ) {
-			outHttpResponseBody.write((Integer.toHexString(httpResponseBody.size())+"\r\n").getBytes());
+			outHttpResponseBody.write((Integer.toHexString(httpResponseBody.size())+"\r\n").getBytes(StandardCharsets.US_ASCII));
 			outHttpResponseBody.write(httpResponseBody.toByteArray());
-			outHttpResponseBody.write("\r\n".getBytes());
+			outHttpResponseBody.write("\r\n".getBytes(StandardCharsets.US_ASCII));
 			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
 			encapsulatedHeaderEcho.append("res-body=").append(offset);
 			offset += outHttpResponseBody.size();
@@ -711,8 +714,8 @@ public class ClientHandler implements Runnable {
 			encapsulatedHeaderEcho.append("null-body=").append(offset);
 		}
 		
-		out.write(("Encapsulated: "+encapsulatedHeaderEcho+"\r\n").getBytes());
-		out.write("\r\n".getBytes());
+		out.write(("Encapsulated: "+encapsulatedHeaderEcho+"\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write("\r\n".getBytes(StandardCharsets.US_ASCII));
 		
 		boolean eof = false;
 		if(httpRequestHeaders.size() > 0) {
@@ -753,12 +756,12 @@ public class ClientHandler implements Runnable {
 		ByteArrayOutputStream outHttpResponseBody    = new ByteArrayOutputStream();
 		
 		if( icapThreatsHeader.size() > 0 ) {
-			outHttpResponseHeaders.write("HTTP/1.1 403 Forbidden\r\n".getBytes());
+			outHttpResponseHeaders.write("HTTP/1.1 403 Forbidden\r\n".getBytes(StandardCharsets.US_ASCII));
 		} else {
-			outHttpResponseHeaders.write("HTTP/1.1 200 OK\r\n".getBytes());
+			outHttpResponseHeaders.write("HTTP/1.1 200 OK\r\n".getBytes(StandardCharsets.US_ASCII));
 		}
 		
-		outHttpResponseHeaders.write(("Server: "+serverName+"\r\n").getBytes());
+		outHttpResponseHeaders.write(("Server: "+serverName+"\r\n").getBytes(StandardCharsets.US_ASCII));
 		
 		StringBuilder responseMessage = new StringBuilder("");
 		
@@ -766,22 +769,22 @@ public class ClientHandler implements Runnable {
 			
 			responseMessage.append("Virus Found: ").append(threatName).append("\n");
 			
-			outHttpResponseHeaders.write(("Content-Type: text/plain\r\n").getBytes());
-			outHttpResponseHeaders.write(("Content-Length: "+responseMessage.length()+"\r\n").getBytes());
+			outHttpResponseHeaders.write(("Content-Type: text/plain\r\n").getBytes(StandardCharsets.US_ASCII));
+			outHttpResponseHeaders.write(("Content-Length: "+responseMessage.length()+"\r\n").getBytes(StandardCharsets.US_ASCII));
 			
-			outHttpResponseBody.write((Integer.toHexString(responseMessage.length())+"\r\n").getBytes());
-			outHttpResponseBody.write(responseMessage.toString().getBytes());
-			outHttpResponseBody.write("\r\n".getBytes());
+			outHttpResponseBody.write((Integer.toHexString(responseMessage.length())+"\r\n").getBytes(StandardCharsets.US_ASCII));
+			outHttpResponseBody.write(responseMessage.toString().getBytes(StandardCharsets.US_ASCII));
+			outHttpResponseBody.write("\r\n".getBytes(StandardCharsets.US_ASCII));
 			
 		}
 		
-		outHttpResponseHeaders.write(("Via: "+serverName+"\r\n").getBytes());
+		outHttpResponseHeaders.write(("Via: "+serverName+"\r\n").getBytes(StandardCharsets.US_ASCII));
 		
 		if( icapThreatsHeader.size() > 0 ) {
 			outHttpResponseHeaders.write(icapThreatsHeader.toByteArray());
 		}
 		
-		outHttpResponseHeaders.write("\r\n".getBytes());
+		outHttpResponseHeaders.write("\r\n".getBytes(StandardCharsets.US_ASCII));
 		
 		if(outHttpRequestHeaders.size() > 0) {
 			if(encapsulatedHeaderEcho.length()>0) encapsulatedHeaderEcho.append(", ");
@@ -812,8 +815,8 @@ public class ClientHandler implements Runnable {
 			encapsulatedHeaderEcho.append("null-body=").append(offset);
 		}
 		
-		out.write(("Encapsulated: "+encapsulatedHeaderEcho+"\r\n").getBytes());
-		out.write("\r\n".getBytes());
+		out.write(("Encapsulated: "+encapsulatedHeaderEcho+"\r\n").getBytes(StandardCharsets.US_ASCII));
+		out.write("\r\n".getBytes(StandardCharsets.US_ASCII));
 		
 		boolean eof = false;
 		if(outHttpRequestHeaders.size() > 0) {
@@ -871,9 +874,9 @@ public class ClientHandler implements Runnable {
 
 		for( String threat: response.getThreatList() ) {
 			threatName = threat;
-			icapThreatsHeader.write(("X-Threat-Description: "+threatName+"\r\n").getBytes());
-			icapThreatsHeader.write(("X-Threat-Resolution: None\r\n").getBytes());
-			icapThreatsHeader.write(("X-Threat-Type: Threat\r\n").getBytes());
+			icapThreatsHeader.write(("X-Threat-Description: "+threatName+"\r\n").getBytes(StandardCharsets.US_ASCII));
+			icapThreatsHeader.write(("X-Threat-Resolution: None\r\n").getBytes(StandardCharsets.US_ASCII));
+			icapThreatsHeader.write(("X-Threat-Type: Threat\r\n").getBytes(StandardCharsets.US_ASCII));
 			break;
 		}
 		
@@ -893,9 +896,9 @@ public class ClientHandler implements Runnable {
 
 		if( response.getThreat() != null ) {
 			threatName = response.getThreat();
-			icapThreatsHeader.write(("X-Threat-Description: "+threatName+"\r\n").getBytes());
-			icapThreatsHeader.write(("X-Threat-Resolution: None\r\n").getBytes());
-			icapThreatsHeader.write(("X-Threat-Type: Threat\r\n").getBytes());
+			icapThreatsHeader.write(("X-Threat-Description: "+threatName+"\r\n").getBytes(StandardCharsets.US_ASCII));
+			icapThreatsHeader.write(("X-Threat-Resolution: None\r\n").getBytes(StandardCharsets.US_ASCII));
+			icapThreatsHeader.write(("X-Threat-Type: Threat\r\n").getBytes(StandardCharsets.US_ASCII));
 		}
 		
 	}
@@ -928,6 +931,10 @@ public class ClientHandler implements Runnable {
 		Logger.getGlobal().warning(message);
 	}
 	
+	private void info(String message) {
+		Logger.getGlobal().info(message);
+	}
+	
 	private static void reset( int[]c ){
 		for(int i = 0; i < c.length; ++i) c[i]=-1;
 	}
@@ -937,7 +944,7 @@ public class ClientHandler implements Runnable {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		Daemon.main(args);
+		Worker.main(args);
 	}
 	
 }

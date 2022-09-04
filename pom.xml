@@ -6,7 +6,7 @@
 
 	<groupId>net.rfc3507</groupId>
 	<artifactId>icap-server</artifactId>
-	<version>1.0.0-RC02</version>
+	<version>1.0.0-SNAPSHOT</version>
 	
 	<name>icap-server</name>
 	<description>ICAP Server Implementation for RFC 3507</description>
@@ -20,7 +20,7 @@
 		</developer>
 	</developers>
 	
-	<url>https://github.com/claudineyns/icap-server</url>
+	<url>https://github.com/claudineyns/icap-server.git</url>
 	
 	<licenses>
 		<license>
