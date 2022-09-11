@@ -1,4 +1,4 @@
-package net.rfc3507.av.windowsdefender;
+package io.github.rfc3507.av.windowsdefender;
 
 @SuppressWarnings("serial")
 public class WindowsDefenderException extends Exception {

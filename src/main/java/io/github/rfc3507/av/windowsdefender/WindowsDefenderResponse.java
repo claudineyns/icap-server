@@ -1,4 +1,4 @@
-package net.rfc3507.av.windowsdefender;
+package io.github.rfc3507.av.windowsdefender;
 
 import java.io.Serializable;
 import java.util.Collections;
