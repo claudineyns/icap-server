@@ -1,4 +1,4 @@
-package net.rfc3507.av.clamav;
+package io.github.rfc3507.av.clamav;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

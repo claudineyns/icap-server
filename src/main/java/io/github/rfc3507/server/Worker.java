@@ -1,4 +1,4 @@
-package net.rfc3507.server;
+package io.github.rfc3507.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;

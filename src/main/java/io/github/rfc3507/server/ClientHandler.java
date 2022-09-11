@@ -1,4 +1,4 @@
-package net.rfc3507.server;
+package io.github.rfc3507.server;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,10 +16,10 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.rfc3507.av.clamav.ClamAVCore;
-import net.rfc3507.av.clamav.ClamAVResponse;
-import net.rfc3507.av.windowsdefender.WindowsDefenderAntivirus;
-import net.rfc3507.av.windowsdefender.WindowsDefenderResponse;
+import io.github.rfc3507.av.clamav.ClamAVCore;
+import io.github.rfc3507.av.clamav.ClamAVResponse;
+import io.github.rfc3507.av.windowsdefender.WindowsDefenderAntivirus;
+import io.github.rfc3507.av.windowsdefender.WindowsDefenderResponse;
 
 public class ClientHandler implements Runnable {
 	
