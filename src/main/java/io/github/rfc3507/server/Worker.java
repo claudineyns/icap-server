@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Logger;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
 public class Worker {
@@ -59,7 +60,8 @@ public class Worker {
 			} catch(IOException e) {
 				break;
 			}
-			new Thread(new ClientHandler(client)).start();
+
+			CompletableFuture.runAsync(new ClientHandler(client));
 		}
 		
 	}
