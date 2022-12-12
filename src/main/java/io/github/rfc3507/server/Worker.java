@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Logger;
+import java.util.Optional;
+import java.util.concurrent.Executors;
 
 public class Worker {
 
@@ -15,18 +17,39 @@ public class Worker {
 	
 	private ServerSocket server;
 	
-	private void start() throws IOException {
-		
-		this.server = new ServerSocket(1344);
-		
+	private void start() throws IOException {		
 		final Thread shutdown = new Thread(()->{
 			try { server.close(); } catch(IOException e) {}
 			logger.info("[ICAP-SERVER] Service terminated.");
 		});
-
 		Runtime.getRuntime().addShutdownHook(shutdown);
+
+		Executors.newSingleThreadExecutor().submit(() -> startService());
+	}
+
+	private void startService() {
+		try {
+			listen();
+		} catch(IOException e) {
+			stopService();
+		}
+	}
+
+	private void stopService() {
+		try {
+			server.close();
+		} catch(IOException e) {}
+	}
+
+	private void listen() throws IOException {
+
+		final String servicePort = Optional
+			.ofNullable(System.getenv("APP_SERVICE_PORT"))
+			.orElse("1344");
+
+		this.server = new ServerSocket(Integer.parseInt(servicePort));
 		
-		logger.info("[ICAP-SERVER] Listening on port 1344");
+		logger.info("[ICAP-SERVER] Listening on port "+servicePort);
 		
 		while(true) {
 			Socket client = null;
@@ -34,7 +57,6 @@ public class Worker {
 				client = server.accept();
 				Logger.getGlobal().info("[ICAP-SERVER] Connection received!");
 			} catch(IOException e) {
-				e.printStackTrace();
 				break;
 			}
 			new Thread(new ClientHandler(client)).start();
