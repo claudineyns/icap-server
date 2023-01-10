@@ -18,17 +18,20 @@ public class Worker {
 
 	private ServerSocket server;
 
-	private void start() throws IOException {
+	public void start() throws IOException {
 		final Thread shutdown = new Thread(() -> {
 			try {
-				server.close();
-			} catch (IOException e) {
-			}
+				if(!server.isClosed()) { server.close(); }
+			} catch (IOException e) { /***/ }
 			logger.info("[ICAP-SERVER] Service terminated.");
 		});
 		Runtime.getRuntime().addShutdownHook(shutdown);
 
 		Executors.newSingleThreadExecutor().submit(() -> startService());
+	}
+
+	public void stop() {
+		stopService();
 	}
 
 	private void startService() {
@@ -42,15 +45,16 @@ public class Worker {
 	private void stopService() {
 		try {
 			server.close();
-		} catch (IOException e) {
-		}
+		} catch (IOException e) { /***/ }
 	}
 
 	private void listen() throws IOException {
 
 		final String servicePort = Optional
-				.ofNullable(System.getenv("APP_SERVICE_PORT"))
-				.orElse("1344");
+			.ofNullable(System.getenv("APP_SERVICE_PORT"))
+			.orElse(Optional
+				.ofNullable(System.getProperty("app.service.port"))
+				.orElse("1344"));
 
 		this.server = new ServerSocket(Integer.parseInt(servicePort));
 

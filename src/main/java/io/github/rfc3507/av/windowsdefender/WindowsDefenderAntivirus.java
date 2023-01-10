@@ -46,8 +46,11 @@ public class WindowsDefenderAntivirus {
 			throw new WindowsDefenderException(e.getMessage());
 		}
 		windowsDefenderExecution.add("-DisableRemediation");
-		
-		String[]command = windowsDefenderExecution.toArray(new String[]{});
+
+		final String testMode = System.getProperty("testMode");		
+		final String[] command = "true".equals(testMode) 
+			? new String[] { "echo", "Threat                  : Win.Test.EICAR_HDB-1" }
+			: windowsDefenderExecution.toArray(new String[]{});
 		
 		Process process = null;
 		

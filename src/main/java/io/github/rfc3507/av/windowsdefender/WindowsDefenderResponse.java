@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-@SuppressWarnings("serial")
 public class WindowsDefenderResponse implements Serializable {
 
 	private List<String> threatList = new LinkedList<>();
