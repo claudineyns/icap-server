@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.github.rfc3507</groupId>
 	<artifactId>icap-server</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0-alpha.1</version>
 
 	<name>icap-server</name>
 	<description>Very basic ICAP Server implementation based on RFC 3507</description>
@@ -16,19 +17,19 @@
 			<id>claudineyns</id>
 			<name>Claudiney Nascimento</name>
 			<email>contato@claudiney.info</email>
-			<url>https://github.com/claudineyns/</url>
+			<url>https://github.com/claudineyns</url>
 		</developer>
 	</developers>
-	
+
 	<url>https://github.com/claudineyns/icap-server.git</url>
-	
+
 	<licenses>
 		<license>
 			<name>MIT License</name>
 			<url>https://raw.githubusercontent.com/claudineyns/icap-server/master/LICENSE</url>
 		</license>
 	</licenses>
-	
+
 	<dependencies>
 
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
@@ -43,7 +44,7 @@
 	<build>
 
 		<plugins>
-			
+
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.3</version>
@@ -52,7 +53,7 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-		
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -65,7 +66,8 @@
 						<configuration>
 							<shadedArtifactAttached>true</shadedArtifactAttached>
 							<transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>io.github.rfc3507.server.Worker</mainClass>
 								</transformer>
 							</transformers>
@@ -73,7 +75,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 		</plugins>
 
 	</build>
