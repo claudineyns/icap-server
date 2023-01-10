@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -849,8 +850,10 @@ public class ClientHandler implements Runnable {
 	private String threatName = null;
 	
 	private void findThreatsInPayload() throws Exception {
-		
-		String environment = System.getProperty("os.name");
+		final String environment = 
+			"true".equals(System.getProperty("testMode"))
+				? Optional.ofNullable(System.getProperty("test.os.name")).orElse(System.getProperty("os.name"))
+				: System.getProperty("os.name");
 		
 		if(environment.toLowerCase().contains("windows")) {
 			findThreatsInPayloadOnWindows();

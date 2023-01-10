@@ -1,0 +1,15 @@
+FROM alpine:3.16.2
+
+RUN apk add --update clamav clamav-daemon openjdk8-jre-base
+
+RUN mkdir /app \
+ && echo '#!/bin/sh' >> /app/startup.sh \
+ && echo 'freshclam' >> /app/startup.sh \
+ && echo '/usr/bin/java -jar /app/runner.jar' >> /app/startup.sh \
+ && chmod +x /app/startup.sh
+
+COPY ./target/*-shaded.jar /app/runner.jar
+
+VOLUME /var/lib/clamav
+
+CMD /app/startup.sh
