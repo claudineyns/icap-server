@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+title: RFC-3507 (ICAP) Server Implementation
+message: Simple ICAP Server Java Implementation
+type: software
+authors:
+  - given-names: Claudiney
+    email: contato@claudiney.dev
+    orcid: 'https://orcid.org/0000-0002-9967-7614'
+repository-code: 'https://github.com/claudineyns/icap-server.git'
+abstract: Basic implementation for RFC 3507 (ICAP) Server.
+keywords:
+  - rfc3507
+  - icap-protocol
+license: MIT
