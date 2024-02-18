@@ -1,6 +1,6 @@
-FROM alpine:3.16.2 as builder
+FROM alpine:3.19.1 as builder
 
-ARG MAVEN_VERSION=3.9.1
+ARG MAVEN_VERSION=3.9.6
 
 RUN apk add --update wget zip openjdk8 git
 
@@ -11,13 +11,14 @@ RUN wget -q -O /tmp/maven.zip https://dlcdn.apache.org/maven/maven-3/${MAVEN_VER
  && rm -Rf /tmp/apache-maven-${MAVEN_VERSION}/
 
 RUN cd /tmp \
+ && echo '# Fetching source code...' \
  && git clone https://github.com/claudineyns/icap-server.git \
- && echo 'Building application...' \
+ && echo '# Building application...' \
  && /usr/local/maven/bin/mvn -f icap-server/pom.xml package \
  && mv icap-server/target/*-shaded.jar /tmp/runner.jar \
  && echo 'Build completed.'
 
-FROM alpine:3.16.2
+FROM alpine:3.19.1
 
 ENV TZ=BRT+3
 
