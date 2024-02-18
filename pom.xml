@@ -7,7 +7,7 @@
 
 	<groupId>io.github.rfc3507</groupId>
 	<artifactId>icap-server</artifactId>
-	<version>1.0.0-alpha.1</version>
+	<version>1.0.0-alpha.2</version>
 
 	<name>icap-server</name>
 	<description>Very basic ICAP Server implementation based on RFC 3507</description>
